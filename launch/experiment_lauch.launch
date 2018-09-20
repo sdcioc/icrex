@@ -1,0 +1,36 @@
+<launch>
+        <arg name="experiment_number" default="1" />
+        <param name="map_file" value="$(find experiment_package)/config/maps/$(arg experiment_number)/map.yaml">
+        <!--
+        LOAD MAP
+        -->
+        <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
+        <!--
+        LOAD POIs
+        -->
+        <node pkg="experiment_package" name="experiment_poi_manager" type="experiment_poi_manager.py">
+            <param name="operation_type" value="load" />
+            <param name="filename" value="$(find experiment_package)/config/$(arg experiment_number)_pois.json" />
+        </node>
+
+        <!--
+        LOAD ExperimentManager
+        -->
+        <node pkg="experiment_package" name="experiment_node" type="experiment_node.py">
+            <param name="filename" value="$(find experiment_package)/config/$(arg experiment_number)_rooms.json" />
+        </node>
+
+        <!--
+        LOAD Events writer
+        -->
+        <node pkg="experiment_package" name="experiment_events_writer" type="experiment_events_writer.py">
+            <param name="filename" value="$(find experiment_package)/logs/$(arg experiment_number)_events.json" />
+        </node>
+
+        <!--
+        LOAD Path writer
+        -->
+        <node pkg="experiment_package" name="experiment_path_writer" type="experiment_path_writer.py">
+            <param name="filename" value="$(find experiment_package)/logs/$(arg experiment_number)_path.json" />
+        </node>
+</launch>

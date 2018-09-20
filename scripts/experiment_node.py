@@ -12,6 +12,12 @@ import copy
 import rospy
 import geometry_msgs.msg
 import std_msgs.msg
+import sensor_msgs.msg
+
+## face detection libraries
+import cv2
+import dlib
+import cv_bridge
 
 def convert_POIPosition_MapPosition(position):
 	#tipul de mesaj pentru map
@@ -98,6 +104,13 @@ class POIInfoManager:
     def set_visited(self):
         self.points[self.current]['visited'] = True;
 
+    def set_poi(self, poi_name):
+        for point in self.points:
+            if (pot_name == point['poi_name']):
+                self.current = self.points.index(point);
+                return True;
+        return False;
+
     # scrie ce am vizitat azi
     def write_file(self):
         for point in self.points:
@@ -106,51 +119,17 @@ class POIInfoManager:
         with open(self.filename, 'w') as fd:
             fd.write(data_to_write);
 
-class POILoader:
-	#constructor
-	def __init__(self, filename):
-		#citesc un fisier xml cu datele punctelor de interes din camera
-		self.filename = filename;
-		with open(self.filename) as fd:
-			self.points = json.loads(fd.read());
-
-	def set_POIs(self):
-		for point in self.points:
-			path = convert_POIName_RosparamName(point['poi_name']);
-			poi_data = ['submap_0', point['poi_name'], point['x'], point['y'], point['w']];
-			rospy.set_param(path, poi_data);
-
-class POISaver:
-	#constructor
-	def __init__(self, filename):
-		#citesc un fisier xml cu datele punctelor de interes din camera
-		self.filename = filename;
-		self.points = [];
-
-	def save_POIs(self):
-		params = rospy.get_param_names();
-		prefix = '/mmap/poi/submap_0/';
-		params = filter(lambda x: x.startswith(prefix), params);
-		poi_names = [p[len(prefix):] for p in params];
-		for poi_name in poi_names:
-			path = convert_POIName_RosparamName(poi_name)
-			rosparam_data = rospy.get_param(path)
-			new_data = {};
-			new_data['poi_name'] = poi_name;
-			new_data['x'] = rosparam_data[2];
-			new_data['y'] = rosparam_data[3];
-			new_data['w'] = rosparam_data[4];
-			self.points.append(copy.deepcopy(new_data));
-		data_to_write = json.dumps(self.points);
-		with open(self.filename, 'w') as fd:
-			fd.write(data_to_write);
-
 class ExperimentLogicManager:
 	#constructor
     def __init__(self, infofilename):
         self.poi_info_manager = POIInfoManager(infofilename);
         self.poi_location_manager = POILocationManager();
         self.state = "INITIAL";
+        self.DISTANCE_ERROR = 0.3;
+        self.sonar_param = "/speed_limit/limitess/base_sonars/obstacle_max/dist"
+        self.laser_param = "/speed_limit/limitess/base_laser/obstacle_max/dist"
+        self.obstacle_normal_dist = 0.5;
+        self.obstacle_door_dist = 0.1;
         self.rate = rospy.Rate(10);
         self.events_pub = rospy.Publisher(
                     '/experiment/events',
@@ -172,6 +151,9 @@ class ExperimentLogicManager:
         rospy.Subscriber("experiment/cmd", std_msgs.msg.String, self.command_subscriber_callback);
         rospy.Subscriber("amcl_pose", geometry_msgs.msg.PoseWithCovarianceStamped, self.position_subscriber_callback);
         rospy.sleep(3);
+        ## face_detec
+        self.cvBridge = cv_bridge.CvBridge();
+        self.faceDectector = dlib.get_frontal_face_detector();
 
     def command_subscriber_callback(self, ros_string_command):
         print "[INFO][COMMAND_CALLBACK] received command {}".format(ros_string_command);
@@ -209,6 +191,8 @@ class ExperimentLogicManager:
                 self.do_experiment_command(current_command);
             elif (current_command['type'] == "STOP"):
                 self.stop_command(current_command);
+            elif (current_command['type'] == "START_EXPERIMENT"):
+                self.start_next_poi_command(current_command);
             else:
                 print "[INFO][COMMAND_CALLBACK] state {} Wrong Command type command {}".format(self.state, current_command['type']);
  
@@ -234,13 +218,12 @@ class ExperimentLogicManager:
         print "[INFO][START_NEXT_POI] going from state {} to IDLE".format(self.state);
         self.state = "IDLE"
         if 'manual' in command:
-            self.parent_poi_name = command['parent_poi_name'];
-            self.poi_name = command['poi_name'];
-            print "[INFO][START_NEXT_POI] manual command";
+            print "[INFO][START_NEXT_POI] manual command poi {}".format(command['poi_name']);
+            self.poi_info_manager.set_poi(command['poi_name']);
         else:
-            self.parent_poi_name = self.poi_info_manager.get_parent_poi_name();
-            self.poi_name = self.poi_info_manager.get_poi_name();
             print "[INFO][START_NEXT_POI] autonomus command";
+        self.parent_poi_name = self.poi_info_manager.get_parent_poi_name();
+        self.poi_name = self.poi_info_manager.get_poi_name();
         self.parent_poi_position = self.poi_location_manager.get_position(self.parent_poi_name);
         self.poi_position = self.poi_location_manager.get_position(self.poi_name);
         print "[INFO][START_NEXT_POI] Room: {}".format(self.poi_name);
@@ -291,12 +274,11 @@ class ExperimentLogicManager:
     def verify_distance_parent_poi_command(self, command):
         print "[INFO][VERIFY_DISTANCE_PARENT_POI] going from state {} to GOING_TO_PARENT_POI".format(self.state);
         self.state = "GOING_TO_PARENT_POI"
-        DISTANCE_ERROR = 0.01;
         current_distance = self.get_distance(self.current_position, self.parent_poi_position);
         next_command = {}
-        if ( current_distance > DISTANCE_ERROR):
+        if ( current_distance > self.DISTANCE_ERROR):
             next_command['type'] = "VERIFY_DISTANCE_PARENT_POI";
-            time.sleep(2);
+            rospy.sleep(2);
         else:
             print "[INFO][VERIFY_DISTANCE_PARENT_POI] going from state {} to ARRIVED_PARENT_POI".format(self.state);
             self.state = "ARRIVED_PARENT_POI"
@@ -307,6 +289,7 @@ class ExperimentLogicManager:
             self.events_pub.publish(json.dumps(to_publish));
             self.rate.sleep();
             next_command['type'] = "VERIFY_DOOR";
+            rospy.sleep(3);
         self.command_pub.publish(json.dumps(next_command));
         self.rate.sleep();
 
@@ -318,6 +301,8 @@ class ExperimentLogicManager:
         to_publish['event'] = {};
         if(self.check_door_open() is True):
             print "[INFO][VERIFY_DOOR] Door opened"
+            rospy.set_param(self.sonar_param, self.obstacle_door_dist);
+            rospy.set_param(self.laser_param, self.obstacle_door_dist);
             next_command['type'] = "GOTO_POI";
             to_publish['event']['name'] = "DOOR OPEN POINT {} WITH PARENT {}".format(self.poi_name, self.parent_poi_name);
         else:
@@ -342,12 +327,11 @@ class ExperimentLogicManager:
         
     def verify_distance_poi_command(self, command):
         print "[INFO][VERIFY_DISTANCE_POI] going from state {} to GOING_TO_POI".format(self.state);
-        DISTANCE_ERROR = 0.01;
         current_distance = self.get_distance(self.current_position, self.poi_position);
         next_command = {}
-        if ( current_distance > DISTANCE_ERROR):
+        if ( current_distance > self.DISTANCE_ERROR):
             next_command['type'] = "VERIFY_DISTANCE_POI";
-            time.sleep(2);
+            rospy.sleep(2);
         else:
             print "[INFO][VERIFY_DISTANCE_POI] going from state {} to ARRIVED_POI".format(self.state);
             self.state = "ARRIVED_POI"
@@ -357,6 +341,8 @@ class ExperimentLogicManager:
             to_publish['time'] = rospy.get_time();
             self.events_pub.publish(json.dumps(to_publish));
             self.rate.sleep();
+            rospy.set_param(self.sonar_param, self.obstacle_normal_dist);
+            rospy.set_param(self.laser_param, self.obstacle_normal_dist);
             next_command['type'] = "CHECK_PEOPLE";
         self.command_pub.publish(json.dumps(next_command));
         self.rate.sleep();
@@ -371,10 +357,13 @@ class ExperimentLogicManager:
         to_publish['time'] = rospy.get_time();
         self.events_pub.publish(json.dumps(to_publish));
         self.rate.sleep();
-        if(self.check_number_people() is 2):
+        people_number = self.check_number_people();
+        if( (people_number < 3) and (people_number > 0)):
             next_command['type'] = "DO_EXPERIMENT";
         else:
             next_command['type'] = "GOTO_BACK_PARENT_POI";
+            rospy.set_param(self.sonar_param, self.obstacle_door_dist);
+            rospy.set_param(self.laser_param, self.obstacle_door_dist);
         self.command_pub.publish(json.dumps(next_command));
         self.rate.sleep();
 
@@ -389,22 +378,25 @@ class ExperimentLogicManager:
         
     def verify_distance_back_parent_poi_command(self, command):
         print "[INFO][VERIFY_DISTANCE_BACK_PARENT_POI] going from state {} to GOING_TO_BACK_PARENT_POI".format(self.state);
-        DISTANCE_ERROR = 0.01;
         current_distance = self.get_distance(self.current_position, self.parent_poi_position);
         next_command = {}
-        if ( current_distance > DISTANCE_ERROR):
+        if ( current_distance > self.DISTANCE_ERROR):
             next_command['type'] = "VERIFY_DISTANCE_BACK_PARENT_POI";
-            time.sleep(2);
+            rospy.sleep(2);
         else:
             next_command['type'] = "NEXT_POI";
+            rospy.set_param(self.sonar_param, self.obstacle_normal_dist);
+            rospy.set_param(self.laser_param, self.obstacle_normal_dist);
         self.command_pub.publish(json.dumps(next_command));
         self.rate.sleep();
 
     def do_experiment_command(self, command):
         print "[INFO][DO_EXPERIMENT] going from state {} to DOING_EXPERIMENT".format(self.state);
         self.state = "DOING_EXPERIMENT"
-        time.sleep(10);
+        rospy.sleep(10);
         next_command = {};
+        rospy.set_param(self.sonar_param, self.obstacle_door_dist);
+        rospy.set_param(self.laser_param, self.obstacle_door_dist);
         next_command['type'] = "GOTO_BACK_PARENT_POI";
         to_publish = {};
         to_publish['event'] = {};
@@ -447,49 +439,38 @@ class ExperimentLogicManager:
         return math.sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1));
     
     def check_door_open(self):
-        return True;
+        try:
+            reply = rospy.wait_for_message(
+            '/scan',
+            sensor_msgs.msg.LaserScan, 3)
+        except rospy.exceptions.ROSException:
+            print "[ERROR][check_door_open] No Info from /scan"
+            return False;
+        ranges = reply.ranges;
+        print "[INFO][check_door_open] message format for scan {}".format(reply);
+        mid_index = len(reply.ranges);
+        new_ranges = [x for x in ranges[mid_index-5:mid_index+5] if not math.isnan(x)];
+        average_dist = sum(new_ranges)/len(new_ranges);
+        if(average_dist > 0.4):
+            return True;
+        else:
+            return False;
 
     def check_number_people(self):
-        return 2;
-
-class PathWriter:
-    #constructor
-    def __init__(self, filename):
-        #citesc un fisier xml cu datele punctelor de interes din camera
-        self.filename = filename;
-        self.points = [];
-        self.fd = open(self.filename, 'a');
-        rospy.Subscriber("experiment/path", std_msgs.msg.String, self.path_subscriber_callback);
-
-    def path_subscriber_callback(self, info):
-        print "[PathWriter] received info {}".format(info);
-        self.fd.write(info.data + '\n');
-    
-    def close(self):
-        self.fd.close();
-
-
-class EventsWriter:
-    #constructor
-    def __init__(self, filename):
-        #citesc un fisier xml cu datele punctelor de interes din camera
-        self.filename = filename;
-        self.points = [];
-        self.fd = open(self.filename, 'a');
-        rospy.Subscriber("experiment/events", std_msgs.msg.String, self.events_subscriber_callback);
-
-    def events_subscriber_callback(self, info):
-        print "[EventsWriter] received info {}".format(info);
-        self.fd.write(info.data + '\n');
-
-    def close(self):
-        self.fd.close();
+        try:
+            reply = rospy.wait_for_message(
+            '/camera/rgb/image_rect_color',
+            sensor_msgs.msg.Image, 3)
+        except rospy.exceptions.ROSException:
+            print "[ERROR][check_number_people] No Info from /camera/rgb/image_rect_color"
+            return -1;
+        print "[INFO][check_number_people] message format for scan {}".format(reply);
+        frame = self.cvBridge.imgmsg_to_cv2(data, 'bgr8');
+        faces_detected = self.faceDectector(frame, 1);
+        print "[INFO][check_number_people] people detected {}".format(len(faces_detected));
+        return len(faces_detected);
 
 def test_POI_classes():
-    #poiSaver = POISaver("/home/pal/poiinfo_saver.json")
-    #poiSaver.save_POIs();
-    #poiLoader= POILoader("/home/pal/poiinfo_loader.json");
-    #poiLoader.set_POIs();
     poiInfoManager = POIInfoManager("/home/pal/roomsinfo.json");
     poiLocationManager = POILocationManager();
     print "POI: {} has the position {}".format(poiInfoManager.get_poi_name(), poiLocationManager.get_position(poiInfoManager.get_poi_name()));
@@ -499,29 +480,13 @@ def test_POI_classes():
     print "NEXT POI: {}".format(poiInfoManager.next_poi());
     poiInfoManager.write_file();
 
-
-def test_Writer_classes():
-    events_pub = rospy.Publisher(
-                '/experiment/events',
-                    std_msgs.msg.String,
-                    latch=True);
-    to_publish = {};
-    to_publishevent = {};
-    to_publish['event']['name'] = "TESTING THE WRITER1";
-    to_publish['time'] = rospy.get_time();
-    events_pub.publish(json.dumps(to_publish));
-
 if __name__ == '__main__':
     rospy.init_node('experiment_node', anonymous=True);
+    filename = rospy.get_param('~filename', '/home/pal/default_rooms.json')
     #test_POI_classes()
     try:
-        my_logic_manager = ExperimentLogicManager("/home/pal/roomsinfo.json");
-        rospy.sleep(2);
-        pathWriter = PathWriter("/home/pal/path.json");
-        eventsWriter = EventsWriter("/home/pal/events.json");
-	my_logic_manager.start_next_poi_command({});
+        my_logic_manager = ExperimentLogicManager(filename);
         rospy.spin();
     except KeyboardInterrupt:
-        pathWriter.close();
-        eventsWriter.close();
+        pass;
 
