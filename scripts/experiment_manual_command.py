@@ -64,6 +64,7 @@ if __name__ == '__main__':
                     8 : CHECK_PEOPLE\n
                     9 : GOTO_BACK_PARENT_POI\n
                     10 : DO_EXPERIMENT\n
+                    11 : EXIT\n
                     """
             command_number = int(raw_input("Enter your command:\n"));
             if (command_number == 0):
@@ -91,6 +92,8 @@ if __name__ == '__main__':
                     command_type = "GOTO_BACK_PARENT_POI"
                 elif (command_number == 10):
                     command_type = "DO_EXPERIMENT"
+                elif (command_number == 11):
+                    break;
                 else:
                     print "[ERORRE][MANUAL_COMMAND] command_number {}".format(command_number);
                 emc.send_general_command(command_type);
