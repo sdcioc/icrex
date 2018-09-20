@@ -7,7 +7,7 @@ import std_msgs.msg
 
 
 class ExperimentManualCommandManager:
-    def __initi__(self):
+    def __init__(self):
         self.command_pub = rospy.Publisher(
                     '/experiment/cmd',
                         std_msgs.msg.String,
@@ -65,7 +65,7 @@ if __name__ == '__main__':
                     9 : GOTO_BACK_PARENT_POI\n
                     10 : DO_EXPERIMENT\n
                     """
-            command_number = raw_input("Enter your command");
+            command_number = int(raw_input("Enter your command:\n"));
             if (command_number == 0):
                 emc.send_start_experiment_command();
             elif (command_number == 1):

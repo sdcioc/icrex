@@ -1,6 +1,6 @@
 <launch>
         <arg name="experiment_number" default="1" />
-        <param name="map_file" value="$(find experiment_package)/config/maps/$(arg experiment_number)/map.yaml">
+        <arg name="map_file" default="$(find experiment_package)/config/maps/$(arg experiment_number)/map.yaml"/>
         <!--
         LOAD MAP
         -->
@@ -16,7 +16,7 @@
         <!--
         LOAD ExperimentManager
         -->
-        <node pkg="experiment_package" name="experiment_node" type="experiment_node.py">
+        <node pkg="experiment_package" name="experiment_node" type="experiment_node.py" output="screen">
             <param name="filename" value="$(find experiment_package)/config/$(arg experiment_number)_rooms.json" />
         </node>
 

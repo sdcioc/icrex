@@ -1,0 +1,10 @@
+<launch>
+        <arg name="experiment_number" default="1" />
+        <!--
+        SAVE POIs
+        -->
+        <node pkg="experiment_package" name="experiment_poi_manager" type="experiment_poi_manager.py">
+            <param name="operation_type" value="save" />
+            <param name="filename" value="$(find experiment_package)/config/$(arg experiment_number)_pois.json" />
+        </node>
+</launch>
