@@ -485,6 +485,7 @@ if __name__ == '__main__':
     filename = rospy.get_param('~filename', '/home/pal/default_rooms.json')
     #test_POI_classes()
     try:
+        rospy.loginfo("IT IS WORKING");
         my_logic_manager = ExperimentLogicManager(filename);
         rospy.spin();
     except KeyboardInterrupt:
