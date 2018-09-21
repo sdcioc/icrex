@@ -152,7 +152,8 @@ install(PROGRAMS
   scripts/experiment_poi_manager.py
   scripts/experiment_events_writer.py
   scripts/experiment_path_writer.py
-  scripts/old_expermient_node.py
+  scripts/old_experiment_node.py
+  scripts/experiment_face_dect.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
  )
 
