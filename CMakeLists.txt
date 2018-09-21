@@ -154,6 +154,7 @@ install(PROGRAMS
   scripts/experiment_path_writer.py
   scripts/old_experiment_node.py
   scripts/experiment_face_dect.py
+  scripts/experiment_door_verify.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
  )
 

@@ -1,6 +1,5 @@
 #! /usr/bin/python
 import rospy
-import geometry_msgs.msg
 import std_msgs.msg
 import sensor_msgs.msg
 
@@ -8,7 +7,6 @@ import sensor_msgs.msg
 import cv2
 import dlib
 import cv_bridge
-import math
 import json
 
 
@@ -27,12 +25,12 @@ class FaceDetecttorLogicManager:
         rospy.sleep(3);
         ## face_detec
 
-    def rect_to_bb(self, rect):
-        x = rect.left();
-        y = rect.top();
-        w = rect.right() - x;
-        h = rect.bottom() - y;
-        return (x, y, w, h);
+#    def rect_to_bb(self, rect):
+#        x = rect.left();
+#        y = rect.top();
+#        w = rect.right() - x;
+#        h = rect.bottom() - y;
+#        return (x, y, w, h);
 
     def image_subscriber_callback(self, reply):
         rospy.loginfo("[image_subscriber_callback] message format for scan {}".format(reply));
@@ -43,29 +41,13 @@ class FaceDetecttorLogicManager:
         to_publish['faces'] = faces_detected;
         to_publish['time'] = rospy.get_time();
         self.face_detect_pub.publish(json.dumps(to_publish));
-        for (i, rect) in enumerate(faces_detected):
-            (x, y, w, h) = self.rect_to_bb(rect);
-            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2);
-            cv2.putText(frame, "Face #{}".format(i + 1), (x - 10, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2);
-        cv2.imshow("Output", frame);
-
-    def check_door_open(self):
-        try:
-            reply = rospy.wait_for_message(
-            '/scan',
-            sensor_msgs.msg.LaserScan, 3);
-        except rospy.exceptions.ROSException:
-            rospy.loginfo("[ERROR][check_door_open] No Info from /scan");
-            return False;
-        ranges = reply.ranges;
-        rospy.loginfo("[check_door_open] message format for scan {}".format(reply));
-        mid_index = len(reply.ranges);
-        new_ranges = [x for x in ranges[mid_index-5:mid_index+5] if not math.isnan(x)];
-        average_dist = sum(new_ranges)/len(new_ranges);
-        if(average_dist > 0.4):
-            return True;
-        else:
-            return False;
+        self.rate.sleep();
+#        for (i, rect) in enumerate(faces_detected):
+#            #(x, y, w, h) = self.rect_to_bb(rect);
+#            #cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2);
+#            cv2.rectangle(frame, (rect.left(), rect.top()), (rect.right(), rect.bottom()), (0, 255, 0), 2);
+#            cv2.putText(frame, "Face #{}".format(i + 1), (x - 10, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2);
+#        cv2.imshow("Output", frame);
 
     def check_number_people(self):
         try:
@@ -75,7 +57,7 @@ class FaceDetecttorLogicManager:
         except rospy.exceptions.ROSException:
             rospy.loginfo("[ERROR][check_number_people] No Info from /xtion/rgb/image_rect_color");
             return -1;
-        rospy.loginfo("[check_number_people] message format for scan {}".format(reply));
+        #rospy.loginfo("[check_number_people] message format for scan {}".format(reply));
         frame = self.cvBridge.imgmsg_to_cv2(reply, 'bgr8');
         faces_detected = self.faceDectector(frame, 1);
         rospy.loginfo("[check_number_people] people detected {}".format(len(faces_detected)));
@@ -85,13 +67,14 @@ if __name__ == '__main__':
     rospy.init_node('experiment_face_detect_node', anonymous=True);
     #test_POI_classes()
     try:
-        rospy.loginfo("[EXPERIMENT__FACE_DETECT_NODE] STARTED");
+        rospy.loginfo("[EXPERIMENT_FACE_DETECT_NODE] STARTED");
         my_logic_manager = FaceDetecttorLogicManager();
         while(True):
             n = my_logic_manager.check_number_people();
-            rospy.sleep(3);
+            #rospy.sleep(3);
             if(n == -1):
                 break;
-        rospy.spin();
+        #my_logic_manager = FaceDetecttorLogicManager();
+        #rospy.spin();
     except KeyboardInterrupt:
         pass;

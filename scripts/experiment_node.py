@@ -473,7 +473,7 @@ class ExperimentLogicManager:
         except rospy.exceptions.ROSException:
             rospy.loginfo("[ERROR][check_number_people] No Info from /camera/rgb/image_rect_color");
             return -1;
-        rospy.loginfo("[check_number_people] message format for scan {}".format(reply));
+        #rospy.loginfo("[check_number_people] message format for scan {}".format(reply));
         frame = self.cvBridge.imgmsg_to_cv2(reply, 'bgr8');
         faces_detected = self.faceDectector(frame, 1);
         rospy.loginfo("[check_number_people] people detected {}".format(len(faces_detected)));
