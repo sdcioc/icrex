@@ -308,7 +308,7 @@ class ExperimentLogicManager:
         next_command = {}
         to_publish = {};
         to_publish['event'] = {};
-        if(self.check_door_open() is True):
+        if(self.check_door_open() == 1):
             rospy.loginfo("[VERIFY_DOOR] Door opened")
             rospy.set_param(self.sonar_param, self.obstacle_door_dist);
             rospy.set_param(self.laser_param, self.obstacle_door_dist);
@@ -454,16 +454,15 @@ class ExperimentLogicManager:
             sensor_msgs.msg.LaserScan, 3);
         except rospy.exceptions.ROSException:
             rospy.loginfo("[ERROR][check_door_open] No Info from /scan");
-            return False;
+            return -1;
         ranges = reply.ranges;
-        rospy.loginfo("[check_door_open] message format for scan {}".format(reply));
-        mid_index = len(reply.ranges);
-        new_ranges = [x for x in ranges[mid_index-5:mid_index+5] if not math.isnan(x)];
+        new_ranges = [x for x in ranges[280:380] if not math.isnan(x)];
         average_dist = sum(new_ranges)/len(new_ranges);
-        if(average_dist > 0.4):
-            return True;
+        rospy.loginfo("[check_door_open] new_ranges {}, \n distance {}:".format(new_ranges, average_dist));
+        if(average_dist > 1.5):
+            return 1;
         else:
-            return False;
+            return 0;
 
     def check_number_people(self):
         try:

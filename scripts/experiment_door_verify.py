@@ -22,18 +22,16 @@ class LaserLogicManager:
 
 
     def laser_subscriber_callback(self, reply):
-        rospy.loginfo("[laser_subscriber_callback] message format for scan {}".format(reply));
+        #rospy.loginfo("[laser_subscriber_callback] message format for scan {}".format(reply));
         ranges = reply.ranges;
-        rospy.loginfo("[check_door_open] message format for scan {}".format(reply));
-        mid_index = len(reply.ranges);
-        new_ranges = [x for x in ranges[mid_index-5:mid_index+5] if not math.isnan(x)];
+        new_ranges = [x for x in ranges[280:380] if not math.isnan(x)];
         average_dist = sum(new_ranges)/len(new_ranges);
         to_publish = {};
         to_publish['distance'] = average_dist;
         to_publish['time'] = rospy.get_time();
         self.distance_pub.publish(json.dumps(to_publish));
         self.rate.sleep();
-        if(average_dist > 0.4):
+        if(average_dist > 1.5):
             rospy.loginfo("[check_door_open] open");
         else:
             rospy.loginfo("[check_door_open] closed");
@@ -47,12 +45,17 @@ class LaserLogicManager:
             rospy.loginfo("[ERROR][check_door_open] No Info from /scan");
             return -1;
         ranges = reply.ranges;
-        rospy.loginfo("[check_door_open] message format for scan {}".format(reply));
-        mid_index = len(reply.ranges);
-        new_ranges = [x for x in ranges[mid_index-5:mid_index+5] if not math.isnan(x)];
+        #rospy.loginfo("[check_door_open] message format for scan {}".format(reply));
+        #rightIndexes = [];
+        #for i in range(len(ranges)):
+        #    if(ranges[i] < 1.0):
+        #        rightIndexes.append(i);
+        #mid_index = len(reply.ranges);
+        #new_ranges = [x for x in ranges[mid_index-5:mid_index+5] if not math.isnan(x)];
+        new_ranges = [x for x in ranges[280:380] if not math.isnan(x)];
         average_dist = sum(new_ranges)/len(new_ranges);
-        rospy.loginfo("[check_door_open] mid_index : {},\n new_ranges {}, \n distance {}:".format(mid_index, new_ranges, average_dist));
-        if(average_dist > 0.4):
+        rospy.loginfo("[check_door_open] new_ranges {}, \n distance {}:".format(new_ranges, average_dist));
+        if(average_dist > 1.5):
             return 1;
         else:
             return 0;
@@ -62,12 +65,12 @@ if __name__ == '__main__':
     try:
         rospy.loginfo("[EXPERIMENT_LASER_NODE] STARTED");
         my_logic_manager = LaserLogicManager();
-        while(True):
-            n = my_logic_manager.check_door_open();
-            rospy.sleep(3);
-            if(n == -1):
-                break;
-        #my_logic_manager = FaceDetecttorLogicManager();
-        #rospy.spin();
+        #while(True):
+        #    n = my_logic_manager.check_door_open();
+        #    rospy.sleep(3);
+        #    if(n == -1):
+        #        break;
+        my_logic_manager = LaserLogicManager();
+        rospy.spin();
     except KeyboardInterrupt:
         pass;
