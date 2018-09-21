@@ -23,7 +23,7 @@ class FaceDetecttorLogicManager:
         self.cvBridge = cv_bridge.CvBridge();
         self.faceDectector = dlib.get_frontal_face_detector();
         rospy.sleep(3);
-        rospy.Subscriber("xtion/rgb/image_rect_color", std_msgs.msg.String, self.image_subscriber_callback);
+        rospy.Subscriber("xtion/rgb/image_rect_color", sensor_msgs.msg.Image, self.image_subscriber_callback);
         rospy.sleep(3);
         ## face_detec
 
