@@ -23,7 +23,7 @@ class FaceDetecttorLogicManager:
         self.cvBridge = cv_bridge.CvBridge();
         self.faceDectector = dlib.get_frontal_face_detector();
         rospy.sleep(3);
-        rospy.Subscriber("camera/rgb/image_rect_color", std_msgs.msg.String, self.image_subscriber_callback);
+        rospy.Subscriber("xtion/rgb/image_rect_color", std_msgs.msg.String, self.image_subscriber_callback);
         rospy.sleep(3);
         ## face_detec
 
@@ -70,10 +70,10 @@ class FaceDetecttorLogicManager:
     def check_number_people(self):
         try:
             reply = rospy.wait_for_message(
-            '/camera/rgb/image_rect_color',
+            '/xtion/rgb/image_rect_color',
             sensor_msgs.msg.Image, 3);
         except rospy.exceptions.ROSException:
-            rospy.loginfo("[ERROR][check_number_people] No Info from /camera/rgb/image_rect_color");
+            rospy.loginfo("[ERROR][check_number_people] No Info from /xtion/rgb/image_rect_color");
             return -1;
         rospy.loginfo("[check_number_people] message format for scan {}".format(reply));
         frame = self.cvBridge.imgmsg_to_cv2(reply, 'bgr8');
