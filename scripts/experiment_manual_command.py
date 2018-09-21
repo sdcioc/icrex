@@ -31,6 +31,15 @@ class ExperimentManualCommandManager:
         self.command_pub.publish(json.dumps(next_command));
         self.rate.sleep();      
 
+    def send_force_poi_command(self, poi_name):
+        next_command = {};
+        next_command['type'] = "FORCE_POI";
+        next_command['manual'] = True;
+        next_command['poi_name'] = poi_name;
+        print "[INFO][MANUAL_COMMAND] sending FORCE_POI with poi: {}".format(poi_name);
+        self.command_pub.publish(json.dumps(next_command));
+        self.rate.sleep();   
+
     def send_general_command(self, command_type):
         next_command = {};
         next_command['type'] = command_type;
@@ -65,6 +74,7 @@ if __name__ == '__main__':
                     9 : GOTO_BACK_PARENT_POI\n
                     10 : DO_EXPERIMENT\n
                     11 : EXIT\n
+                    12 : FORCE_POI
                     """
             command_number = int(raw_input("Enter your command:\n"));
             if (command_number == 0):
@@ -74,6 +84,9 @@ if __name__ == '__main__':
             elif (command_number == 2):
                 poi_name = raw_input("Enter POI name");
                 emc.send_start_next_poi_command(poi_name)
+            elif (command_number == 12):
+                poi_name = raw_input("Enter POI name");
+                emc.send_force_poi_command(poi_name)
             else:
                 command_type = "";
                 if (command_number == 3):
