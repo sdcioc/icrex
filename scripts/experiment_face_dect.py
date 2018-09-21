@@ -26,7 +26,14 @@ class FaceDetecttorLogicManager:
         rospy.Subscriber("camera/rgb/image_rect_color", std_msgs.msg.String, self.image_subscriber_callback);
         rospy.sleep(3);
         ## face_detec
-    
+
+    def rect_to_bb(self, rect):
+        x = rect.left();
+        y = rect.top();
+        w = rect.right() - x;
+        h = rect.bottom() - y;
+        return (x, y, w, h);
+
     def image_subscriber_callback(self, reply):
         rospy.loginfo("[image_subscriber_callback] message format for scan {}".format(reply));
         frame = self.cvBridge.imgmsg_to_cv2(reply, 'bgr8');
@@ -36,6 +43,11 @@ class FaceDetecttorLogicManager:
         to_publish['faces'] = faces_detected;
         to_publish['time'] = rospy.get_time();
         self.face_detect_pub.publish(json.dumps(to_publish));
+        for (i, rect) in enumerate(faces_detected):
+            (x, y, w, h) = self.rect_to_bb(rect);
+            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2);
+            cv2.putText(frame, "Face #{}".format(i + 1), (x - 10, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2);
+        cv2.imshow("Output", frame);
 
     def check_door_open(self):
         try:
