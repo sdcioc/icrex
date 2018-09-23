@@ -124,7 +124,7 @@ class ExperimentLogicManager:
         self.poi_info_manager = POIInfoManager(infofilename);
         self.poi_location_manager = POILocationManager();
         self.state = "INITIAL";
-        self.DISTANCE_ERROR = 0.3;
+        self.DISTANCE_ERROR = 0.6;
         self.sonar_param = "/speed_limit/limitess/base_sonars/obstacle_max/dist"
         self.laser_param = "/speed_limit/limitess/base_laser/obstacle_max/dist"
         self.obstacle_normal_dist = 0.5;
@@ -448,21 +448,24 @@ class ExperimentLogicManager:
         return math.sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1));
     
     def check_door_open(self):
-        try:
-            reply = rospy.wait_for_message(
-            '/scan',
-            sensor_msgs.msg.LaserScan, 3);
-        except rospy.exceptions.ROSException:
-            rospy.loginfo("[ERROR][check_door_open] No Info from /scan");
-            return -1;
-        ranges = reply.ranges;
-        new_ranges = [x for x in ranges[280:380] if not math.isnan(x)];
-        average_dist = sum(new_ranges)/len(new_ranges);
-        rospy.loginfo("[check_door_open] new_ranges {}, \n distance {}:".format(new_ranges, average_dist));
-        if(average_dist > 1.5):
-            return 1;
-        else:
-            return 0;
+        #try:
+        #    reply = rospy.wait_for_message(
+        #    '/scan',
+        #    sensor_msgs.msg.LaserScan, 3);
+        #except rospy.exceptions.ROSException:
+        #    rospy.loginfo("[ERROR][check_door_open] No Info from /scan");
+        #    return -1;
+        #ranges = reply.ranges;
+        #mid_index = len(ranges)/2;
+        #new_ranges = [x for x in ranges[mid_index-10:mid_index+1-] if not math.isnan(x)];
+        ##new_ranges = [x for x in ranges[280:380] if not math.isnan(x)];
+        #average_dist = sum(new_ranges)/len(new_ranges);
+        #rospy.loginfo("[check_door_open] new_ranges {}, \n distance {}:".format(new_ranges, average_dist));
+        #if(average_dist > 1.5):
+        #    return 1;
+        #else:
+        #    return 0;
+        return 1;
 
     def check_number_people(self):
         try:
@@ -498,5 +501,3 @@ if __name__ == '__main__':
         rospy.spin();
     except KeyboardInterrupt:
         pass;
-
-#sudo apt-get install ros-melodic-joy ros-melodic-teleop-twist-joy ros-melodic-teleop-twist-keyboard ros-melodic-laser-proc ros-melodic-rgbd-launch ros-melodic-depthimage-to-laserscan ros-melodic-rosserial-arduino ros-melodic-rosserial-python ros-melodic-rosserial-server ros-melodic-rosserial-client ros-melodic-rosserial-msgs ros-melodic-amcl ros-melodic-map-server ros-melodic-move-base ros-melodic-urdf ros-melodic-xacro ros-melodic-compressed-image-transport ros-melodic-rqt-image-view ros-melodic-gmapping ros-melodic-navigation ros-melodic-interactive-markers
