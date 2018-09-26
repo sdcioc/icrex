@@ -8,6 +8,6 @@
 
     <node name="experiment_gui_chrome"
           pkg="experiment_package"
-          type="experiment_interface.sh">
+          type="experiment_run_interface.sh">
     </node>
 </launch>

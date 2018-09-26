@@ -61,7 +61,7 @@ class SoundManager:
     def play_initial(self):
         command = self.utility + self.prefix;
         language = rospy.get_param("/user_lang")[0:2];
-        command = command + language + "_inital.wav";
+        command = command + language + "_initial.wav";
         subprocess.check_output(command.split());
 
 
