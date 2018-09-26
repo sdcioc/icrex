@@ -18,6 +18,11 @@ import cv2
 import dlib
 import cv_bridge
 
+#sound
+import subprocess
+import random
+import rospkg
+
 def convert_POIPosition_MapPosition(position):
 	#tipul de mesaj pentru map
 	pos = geometry_msgs.msg.PoseStamped();
@@ -118,17 +123,80 @@ class POIInfoManager:
         with open(self.filename, 'w') as fd:
             fd.write(data_to_write);
 
+class SoundManager:
+    def __init__(self, configfile):
+        self.filename = configfile;
+        with open(self.filename) as fd:
+            self.files = json.loads(fd.read());
+        self.utility = "aplay ";
+        self.general_volume_param = "/pal/general_volume";
+        self.playback_volume_param = "/pal/playback_volume";
+        rospy.set_param(self.general_volume_param, 60);
+        rospy.set_param(self.playback_volume_param, 60);
+        rospack = rospkg.RosPack();
+        self.prefix = rospack.get_path('experiment_package') + "/config/sounds/";
+    
+    def play_first(self, guessed_type):
+        command = self.utility + self.prefix;
+        language = rospy.get_param("/user_lang")[0:2];
+        command = command + language + "_first_";
+        if(guessed_type == 1):
+            command = command + "promotion.wav";
+        else:
+            command = command + "prevention.wav";
+        subprocess.check_output(command.split());
+
+    def play_second(self, guessed_type):
+        command = self.utility + self.prefix;
+        language = rospy.get_param("/user_lang")[0:2];
+        command = command + language + "_second_";
+        if(guessed_type == 1):
+            command = command + "promotion.wav";
+        else:
+            command = command + "prevention.wav";
+        subprocess.check_output(command.split());
+
+    def play_final(self, guessed_type):
+        command = self.utility + self.prefix;
+        language = rospy.get_param("/user_lang")[0:2];
+        command = command + language + "_final_";
+        if(guessed_type == 1):
+            command = command + "promotion.wav";
+        else:
+            command = command + "prevention.wav";
+        subprocess.check_output(command.split());
+
+    def play_exit(self, guessed_type):
+        command = self.utility + self.prefix;
+        language = rospy.get_param("/user_lang")[0:2];
+        command = command + language + "_exit_";
+        if(guessed_type == 1):
+            command = command + "promotion.wav";
+        else:
+            command = command + "prevention.wav";
+        subprocess.check_output(command.split());
+
+    def play_initial(self):
+        command = self.utility + self.prefix;
+        language = rospy.get_param("/user_lang")[0:2];
+        command = command + language + "_inital.wav";
+        subprocess.check_output(command.split());
+    
+
 class ExperimentLogicManager:
 	#constructor
-    def __init__(self, infofilename):
+    def __init__(self, infofilename, soundfilename):
         self.poi_info_manager = POIInfoManager(infofilename);
         self.poi_location_manager = POILocationManager();
+        self.sound_manager = SoundManager(soundfilename);
         self.state = "INITIAL";
+        self.guessed_type = 0;
         self.DISTANCE_ERROR = 0.6;
-        self.sonar_param = "/speed_limit/limitess/base_sonars/obstacle_max/dist"
-        self.laser_param = "/speed_limit/limitess/base_laser/obstacle_max/dist"
+        self.sonar_param = "/speed_limit/limitess/base_sonars/obstacle_max/dist";
+        self.laser_param = "/speed_limit/limitess/base_laser/obstacle_max/dist";
         self.obstacle_normal_dist = 0.5;
         self.obstacle_door_dist = 0.1;
+        self.people_number = 0;
         self.rate = rospy.Rate(10);
         self.events_pub = rospy.Publisher(
                     '/experiment/events',
@@ -236,8 +304,10 @@ class ExperimentLogicManager:
         rospy.loginfo("[START_NEXT_POI] Room: {}".format(self.poi_name));
         rospy.loginfo("[START_NEXT_POI] Goint to {}".format(self.parent_poi_name));
         to_publish = {};
+        to_publish['room'] = self.poi_name;
         to_publish['event'] = {};
         to_publish['event']['name'] = "SELECTING NEXT POINT {} WITH PARENT {}".format(self.poi_name, self.parent_poi_name);
+        to_publish['event']['type'] = "GOTO_ROOM";
         to_publish['time'] = rospy.get_time();
         self.events_pub.publish(json.dumps(to_publish));
         self.rate.sleep();
@@ -266,6 +336,7 @@ class ExperimentLogicManager:
         to_publish = {};
         to_publish['event'] = {};
         to_publish['event']['name'] = "FINSIH EXPERIMENT";
+        to_publish['event']['type'] = "EXPERIMENT_FINISHED";
         to_publish['time'] = rospy.get_time();
         self.poi_info_manager.write_file();
         self.events_pub.publish(json.dumps(to_publish));
@@ -295,6 +366,8 @@ class ExperimentLogicManager:
             to_publish['event'] = {};
             to_publish['event']['name'] = "ARRIVED PARENT POINT {}".format(self.parent_poi_name);
             to_publish['time'] = rospy.get_time();
+            to_publish['event']['type'] = "ARRIVED_ROOM_DOOR";
+            to_publish['room'] = self.poi_name;
             self.events_pub.publish(json.dumps(to_publish));
             self.rate.sleep();
             next_command['type'] = "VERIFY_DOOR";
@@ -319,8 +392,8 @@ class ExperimentLogicManager:
             next_command['type'] = "NEXT_POI";
             to_publish['event']['name'] = "DOOR CLOSED POINT {} WITH PARENT {}".format(self.poi_name, self.parent_poi_name);
         to_publish['time'] = rospy.get_time();
-        self.events_pub.publish(json.dumps(to_publish));
-        self.rate.sleep();
+        #self.events_pub.publish(json.dumps(to_publish));
+        #self.rate.sleep();
         self.command_pub.publish(json.dumps(next_command));
         self.rate.sleep();
 
@@ -348,11 +421,14 @@ class ExperimentLogicManager:
             to_publish['event'] = {};
             to_publish['event']['name'] = "ARRIVED POINT {}".format(self.poi_name);
             to_publish['time'] = rospy.get_time();
+            to_publish['event']['type'] = "ARRIVED_ROOM";
+            to_publish['room'] = self.poi_name;
             self.events_pub.publish(json.dumps(to_publish));
             self.rate.sleep();
             rospy.set_param(self.sonar_param, self.obstacle_normal_dist);
             rospy.set_param(self.laser_param, self.obstacle_normal_dist);
             next_command['type'] = "CHECK_PEOPLE";
+            #TODO: START MAKING PHOTOS
         self.command_pub.publish(json.dumps(next_command));
         self.rate.sleep();
 
@@ -364,10 +440,21 @@ class ExperimentLogicManager:
         to_publish['event'] = {};
         to_publish['event']['name'] = "START CHECKING PEOPLE POINT {}".format(self.parent_poi_name);
         to_publish['time'] = rospy.get_time();
+        to_publish['event']['type'] = "CHECK_PEOPLE";
+        to_publish['room'] = self.poi_name;
         self.events_pub.publish(json.dumps(to_publish));
         self.rate.sleep();
-        people_number = self.check_number_people();
-        if( (people_number < 3) and (people_number > 0)):
+        self.people_number = self.check_number_people();
+        to_publish = {};
+        to_publish['event'] = {};
+        to_publish['event']['name'] = "FOUND PEOPLE POINT {}".format(self.parent_poi_name);
+        to_publish['time'] = rospy.get_time();
+        to_publish['event']['type'] = "FOUND_PEOPLE";
+        to_publish['event']['number'] = self.people_number;
+        to_publish['room'] = self.poi_name;
+        self.events_pub.publish(json.dumps(to_publish));
+        self.rate.sleep();
+        if( (self.people_number < 3) and (self.people_number > 0)):
             next_command['type'] = "DO_EXPERIMENT";
         else:
             next_command['type'] = "GOTO_BACK_PARENT_POI";
@@ -379,7 +466,18 @@ class ExperimentLogicManager:
     def goto_back_parent_poi_command(self, command):
         rospy.loginfo("[GOTO_BACK_PARENT_POI] going from state {} to GOING_TO_BACK_PARENT_POI".format(self.state));
         self.state = "GOING_TO_BACK_PARENT_POI"
+        to_publish = {};
+        to_publish['event'] = {};
+        to_publish['event']['name'] = "GO bACK parent POINT {}".format(self.parent_poi_name);
+        to_publish['time'] = rospy.get_time();
+        to_publish['event']['type'] = "LEAVING_ROOM";
+        to_publish['room'] = self.poi_name;
+        self.events_pub.publish(json.dumps(to_publish));
+        self.rate.sleep();
+        self.sound_manager.play_exit(self.guessed_type);
         self.move_pub.publish(self.parent_poi_position);
+        self.rate.sleep();
+        #TODO: STOP_MAKING_PHOTOS
         next_command = {};
         next_command['type'] = "VERIFY_DISTANCE_BACK_PARENT_POI";
         self.command_pub.publish(json.dumps(next_command));
@@ -399,7 +497,7 @@ class ExperimentLogicManager:
         self.command_pub.publish(json.dumps(next_command));
         self.rate.sleep();
 
-    def do_experiment_command(self, command):
+    def do_experiment_old_command(self, command):
         rospy.loginfo("[DO_EXPERIMENT] going from state {} to DOING_EXPERIMENT".format(self.state));
         self.state = "DOING_EXPERIMENT"
         rospy.sleep(10);
@@ -413,6 +511,118 @@ class ExperimentLogicManager:
         to_publish['time'] = rospy.get_time();
         self.events_pub.publish(json.dumps(to_publish));
         self.rate.sleep();
+        self.command_pub.publish(json.dumps(next_command));
+        self.rate.sleep();
+
+    def do_experiment_command(self, command):
+        rospy.loginfo("[DO_EXPERIMENT_1] going from state {} to DOING_EXPERIMENT".format(self.state));
+        self.state = "DOING_EXPERIMENT"
+        rospy.set_param(self.sonar_param, self.obstacle_door_dist);
+        rospy.set_param(self.laser_param, self.obstacle_door_dist);
+        self.guessed_type = random.randint(0,1);
+        to_publish = {};
+        to_publish['event'] = {};
+        to_publish['event']['name'] = "EXPERIMENT STARTED {}".format(self.poi_name);
+        to_publish['event']['guessed_type'] = self.guessed_type;
+        to_publish['event']['type'] = "START_EXPERIMENT";
+        to_publish['time'] = rospy.get_time();
+        to_publish['room'] = self.poi_name;
+        self.events_pub.publish(json.dumps(to_publish));
+        self.rate.sleep();
+        #TODO: look after first person
+        rospy.sleep(1);
+        to_publish = {};
+        to_publish['event'] = {};
+        to_publish['event']['name'] = "EXPERIMENT STRTED LOOK UP {}".format(self.poi_name);
+        to_publish['event']['guessed_type'] = self.guessed_type;
+        to_publish['event']['type'] = "SPEAKING_FIRST";
+        to_publish['time'] = rospy.get_time();
+        to_publish['room'] = self.poi_name;
+        self.events_pub.publish(json.dumps(to_publish));
+        self.rate.sleep();
+        self.sound_manager.play_first(self.guessed_type);
+        self.state = "EXPERIMENT_WAITING_FIRST";
+        to_publish = {};
+        to_publish['event'] = {};
+        to_publish['event']['name'] = "EXPERIMENT FINISHED INITIAL SOUND {}".format(self.poi_name);
+        to_publish['event']['guessed_type'] = self.guessed_type;
+        to_publish['event']['type'] = "WAITING_FIRST_RESPONSE";
+        to_publish['time'] = rospy.get_time();
+        to_publish['room'] = self.poi_name;
+        self.events_pub.publish(json.dumps(to_publish));
+        self.rate.sleep();
+        #TODO:show the questions lansare index 
+        next_command = {};
+        if (self.people_number == 2):
+            next_command['type'] = "DO_EXPERIMENT";
+            self.people_number = self.people_number - 1;
+        else:
+            next_command['type'] = "GOTO_BACK_PARENT_POI";
+        try:
+            reply = rospy.wait_for_message(
+            '/experiment/web/cmd',
+            std_msgs.msg.String, 10);
+            to_publish = {};
+            to_publish['event'] = {};
+            to_publish['event']['name'] = "EXPERIMENT RESPONDED FIRST {}".format(self.poi_name);
+            to_publish['event']['guessed_type'] = self.guessed_type;
+            to_publish['event']['type'] = "WAITING_STOP";
+            to_publish['time'] = rospy.get_time();
+            to_publish['room'] = self.poi_name;
+            self.events_pub.publish(json.dumps(to_publish));
+            self.rate.sleep();
+
+            finish = rospy.wait_for_message(
+            '/experiment/web/cmd',
+            std_msgs.msg.String);
+        except rospy.exceptions.ROSException:
+            rospy.loginfo("[INFO][DO_EXPERIMENT] No starrting the questions first");
+            #TODO:move foward
+            to_publish = {};
+            to_publish['event'] = {};
+            to_publish['event']['name'] = "EXPERIMENT sECONF TRY? {}".format(self.poi_name);
+            to_publish['event']['guessed_type'] = self.guessed_type;
+            to_publish['event']['type'] = "SPEAKING_SECOND";
+            to_publish['time'] = rospy.get_time();
+            to_publish['room'] = self.poi_name;
+            self.events_pub.publish(json.dumps(to_publish));
+            self.rate.sleep();
+            self.sound_manager.play_second(self.guessed_type);
+            to_publish = {};
+            to_publish['event'] = {};
+            to_publish['event']['name'] = "EXPERIMENT sECOND {}".format(self.poi_name);
+            to_publish['event']['guessed_type'] = self.guessed_type;
+            to_publish['event']['type'] = "WAITING_SECOND_RESPONSE";
+            to_publish['time'] = rospy.get_time();
+            to_publish['room'] = self.poi_name;
+            self.events_pub.publish(json.dumps(to_publish));
+            self.rate.sleep();
+            try:
+                reply = rospy.wait_for_message(
+                '/experiment/web/cmd',
+                std_msgs.msg.String, 5);
+                to_publish = {};
+                to_publish['event'] = {};
+                to_publish['event']['name'] = "EXPERIMENT RESPONDED SECOND {}".format(self.poi_name);
+                to_publish['event']['guessed_type'] = self.guessed_type;
+                to_publish['event']['type'] = "WAITING_STOP";
+                to_publish['time'] = rospy.get_time();
+                to_publish['room'] = self.poi_name;
+                self.events_pub.publish(json.dumps(to_publish));
+                self.rate.sleep();
+                finish = rospy.wait_for_message(
+                '/experiment/web/cmd',
+                std_msgs.msg.String);
+            except rospy.exceptions.ROSException:
+                rospy.loginfo("[INFO][DO_EXPERIMENT] No starrting the questions second");
+                to_publish = {};
+                to_publish['event'] = {};
+                to_publish['event']['name'] = "EXPERIMENT NOT RESPONDED {}".format(self.poi_name);
+                to_publish['event']['guessed_type'] = self.guessed_type;
+                to_publish['time'] = rospy.get_time();
+                #self.events_pub.publish(json.dumps(to_publish));
+                #self.rate.sleep();
+
         self.command_pub.publish(json.dumps(next_command));
         self.rate.sleep();
 
@@ -467,7 +677,7 @@ class ExperimentLogicManager:
         #    return 0;
         return 1;
 
-    def check_number_people(self):
+    def check_number_people_helper(self):
         try:
             reply = rospy.wait_for_message(
             '/camera/rgb/image_rect_color',
@@ -481,6 +691,27 @@ class ExperimentLogicManager:
         rospy.loginfo("[check_number_people] people detected {}".format(len(faces_detected)));
         return len(faces_detected);
 
+    def check_number_people(self):
+        returnValue = -1;
+        current_guess = self.check_number_people_helper();
+        if (current_guess > returnValue):
+            returnValue = current_guess;
+        rospy.sleep(1);
+        self.sound_manager.play_initial();
+        current_guess = self.check_number_people_helper();
+        if (current_guess > returnValue):
+            returnValue = current_guess;
+        rospy.sleep(1);
+        current_guess = self.check_number_people_helper();
+        if (current_guess > returnValue):
+            returnValue = current_guess;
+        rospy.sleep(2);
+        current_guess = self.check_number_people_helper();
+        if (current_guess > returnValue):
+            returnValue = current_guess;
+        return returnValue;
+
+
 def test_POI_classes():
     poiInfoManager = POIInfoManager("/home/pal/roomsinfo.json");
     poiLocationManager = POILocationManager();
@@ -493,11 +724,12 @@ def test_POI_classes():
 
 if __name__ == '__main__':
     rospy.init_node('experiment_node', anonymous=True);
-    filename = rospy.get_param('~filename', '/home/pal/default_rooms.json')
+    infofilename = rospy.get_param('~infofilename', '/home/pal/default_rooms.json')
+    soundfilename = rospy.get_param('~soundfilename', '/home/pal/default_sound.json')
     #test_POI_classes()
     try:
         rospy.loginfo("[EXPERIMENT_NODE] STARTED");
-        my_logic_manager = ExperimentLogicManager(filename);
+        my_logic_manager = ExperimentLogicManager(infofilename, soundfilename);
         rospy.spin();
     except KeyboardInterrupt:
         pass;

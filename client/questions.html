@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <title>Stress Management Questions</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="css/start.css">
+    <link rel="stylesheet" type="text/css" href="font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="css/sweetalert2.min.css">
+    <!-- <link rel="stylesheet" type="text/css" href="css/matrix.css"> -->
+</head>
+
+<body>
+    <header>
+        <div id="includedContent"></div>
+    </header>
+    <!-- new version -->
+    <div class="container-app">
+        <div class="row" id="intro">
+            <div class="tinyempty"></div>
+
+            <div class="col-md-6 col-lg-6">
+                <h1 class="el_blue" id="quest_no"></h1>
+            </div>
+            <div class="col-md-6 col-lg-6">
+                <!-- add the buton here for quit -->
+                <button class='btn btn-info btn-game' type='button' id='return'><i class="fa fa-sign-out fa-rotate-180 fa-5x"></i><span class="btn-game-span"> </span></button>
+            </div>
+        </div>
+        <div class="row" id="app">
+            <div class="smallempty"></div>
+            <div class="col-md-12 col-lg-12" id="questions">
+                <h1 class="centering" id="top"></h1>
+                <div class="smallempty"></div>
+                <h1 id="question"></h1>
+                <div class="empty"></div>
+                <!-- <h3 class="centering" id="indiciu"></h3> -->
+            </div>
+
+            <div class="col-md-12 col-lg-12" id="answers">
+                <div class="empty"></div>
+                <!-- here there will be the buttons for the answers. -->
+                
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12 col-lg-12 hidden" id="end_quest">
+                <div class="bigempty"></div>
+                <h1 class="el_blue" id="end"></h1>
+            </div>
+        </div>
+
+       
+    </div>
+
+    <!-- Jquery -->
+    <script src="js/jquery.min.js"></script>
+    <!-- ROS -->
+    <script src="js/eventemitter2.min.js"></script>
+    <script src="js/roslib.min.js"></script>
+    <script src="js/hmi.js"></script>
+    <script src="js/language.js"></script>
+    <!-- Custom -->
+    <script src="js/sweetalert2.min.js"></script>
+    <script src="js/functions.js"></script>
+    <script src="js/record_questions.js"></script>
+
+</body>
+</html>

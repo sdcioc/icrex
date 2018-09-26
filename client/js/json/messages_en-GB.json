@@ -1,0 +1,168 @@
+{
+    "intro_messages": {
+		"promotion"  : "",
+		"prevention" : ""
+    },
+    "messages" : {
+        "start" : " START ",
+        "stop"  : " Quit ",
+        "main"  : " When ready press on the START button ",
+        "end"   : " Thank you ! "
+    },
+    "parameters" : {
+        "no_questions"     : "28"
+    },
+    "questions" : {
+        "q1" : {
+            "top" : "",
+            "question" : "When do you think that you are most productive?",
+            "type_answer" : "3a"
+            },
+        "q2" : {
+            "top" : "How does your job require you to work ...",
+            "question" : "Fast? ",
+            "type_answer"  : "5a"
+        },
+        "q3" : {
+            "top" : "How does your job require you to work ...",
+            "question" : "Hard? ",
+            "type_answer"  : "5a"
+        },
+        "q4" : {
+            "top" : "How does your job require you to work ...",
+            "question" : "Much? ",
+            "type_answer"  : "5a"
+        },
+        "q5" : {
+            "top" : "",
+            "question" : "Do you have enough time in a day to complete your work?",
+            "type_answer" : "5a"
+        },
+        "q6" : {
+            "top" : "How do you rate the atmosphere at work?",
+            "question" : "Calm/Pleasant",
+            "type_answer"  : "5b"
+        },
+        "q7" : {
+            "top" : "How do you rate the atmosphere at work?",
+            "question" : "Good spirit of unity",
+            "subquestion1" : "Calm/Pleasant",
+            "type_answer"  : "5b"
+        },
+        "q8" : {
+            "top" : "How do you rate the atmosphere at work?",
+            "question" : "The collegues are there for me",
+            "type_answer"  : "5b"
+        },
+        "q9" : {
+            "top" : "",
+            "question" : "Do you have to keep your eyes on lots of things while you work?",
+            "type_answer" : "1"
+        },
+        "q10" : {
+            "top" : "",
+            "question" : "Does your work require that you remember a lot of things?",
+            "type_answer" : "1"
+        },
+        "q11" : {
+            "top" : "",
+            "question" : "Does your work demand that you are good at coming up with new ideas?",
+            "type_answer" : "1"
+        },
+        "q12": {
+            "top" : "",
+            "question" : "Does your work require you to make difficult decisions?",
+            "type_answer" : "1"
+        },
+        "q13" : {
+            "top" : "",
+            "question" : "At my work, I feel bursting with energy.",
+            "type_answer" : "3"
+        },
+        "q14" : {
+            "top" : "",
+            "question" : "I am enthusiastic about my job.",
+            "type_answer" : "3"
+        },
+        "q15" : {
+            "top" : "",
+            "question" : "I am immersed in my work.",
+            "type_answer" : "3"
+        },
+        "q16" : {
+            "top" : "These questions are about how you have been during the last 5 weeks.",
+            "question" : "How often have you had problems relaxing?",
+            "type_answer" : "9"
+        },
+        "q17" : {
+            "top" : "These questions are about how you have been during the last 5 weeks.",
+            "question" : "How often have you been irritable?",
+            "type_answer" : "9"
+        },
+        "q18" : {
+            "top" : "These questions are about how you have been during the last 5 weeks.",
+            "question" : "How often have you been tense?",
+            "type_answer" : "9"
+        },
+        "q19" : {
+            "top" : "These questions are about how you have been during the last 5 weeks.",
+            "question" : "How often have you had problems concentrating?",
+            "type_answer" : "9"
+        },
+        "q20" : {
+            "top" : "These questions are about how you have been during the last 5 weeks.",
+            "question" : "How often have you found it difficult to think clearly?",
+            "type_answer" : "9"
+        },
+        "q21" : {
+            "top" : "These questions are about how you have been during the last 5 weeks.",
+            "question" : "How often have you had difficulty in taking decisions?",
+            "type_answer" : "9"
+        },
+        "q22" : {
+            "top" : "These questions are about how you have been during the last 5 weeks.",
+            "question" : "How often have you had difficulty with remembering?",
+            "type_answer" : "9"
+        },
+        "q23" : {
+            "top" : "How well do these descriptions fit on you as a person?",
+            "question" : "I am always able to solve difficult problems, if I try hard enough",
+            "type_answer" : "10"
+        },
+        "q24" : {
+            "top" : "How well do these descriptions fit on you as a person?",
+            "question" : "If people work against me, I find a way of achieving what I want.",
+            "type_answer" : "10"
+        },
+        "q25" : {
+            "top" : "How well do these descriptions fit on you as a person?",
+            "question" : "It is easy for me to stick to my plans and reach my objectives",
+            "type_answer" : "10"
+        },
+        "q26" : {
+            "top" : "How well do these descriptions fit on you as a person?",
+            "question" : "I feel confident that I can handle unexpected events.",
+            "type_answer" : "10"
+        },
+        "q27" : {
+            "top" : "How well do these descriptions fit on you as a person?",
+            "question" : "When I have a problem, I can usually find several ways of solving it.",
+            "type_answer" : "10"
+        },
+        "q28" : {
+            "top" : "How well do these descriptions fit on you as a person?",
+            "question" : "Regardless of what happens, I usually manage.",
+            "type_answer" : "10"
+        }
+
+    },
+    "answers" : {
+        "1"  : "Always; Often; Sometimes; Seldom; Never/hardly ever",
+        "3"  : "Never; Seldom; Sometimes; Often; Always",
+        "3a" : "In the morning; In the afternoon; In the evening",
+        "9"  : "All the time; A large part of the time; Part of the time; A small part of the time; Not at all",
+        "10" : "Fits perfectly; Fits quite well; Fits a little bit; Does not fit",
+        "5b" : "Not at all; Slightly; Moderately; Very; Extremely",
+        "5a" : "Never; Seldom; Sometimes; Often; Almost always"
+    }
+}

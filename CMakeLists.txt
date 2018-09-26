@@ -155,6 +155,9 @@ install(PROGRAMS
   scripts/old_experiment_node.py
   scripts/experiment_face_dect.py
   scripts/experiment_door_verify.py
+  scripts/experiment_sound_test.py
+  scripts/experiment_run_http_server.sh
+  scripts/experiment_run_interface.sh
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
  )
 
@@ -173,7 +176,7 @@ install(PROGRAMS
 # )
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
-install(DIRECTORY launch config
+install(DIRECTORY launch config logs tests client
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 

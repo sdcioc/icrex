@@ -1,6 +1,7 @@
 <launch>
         <arg name="experiment_number" default="1" />
         <arg name="map_file" default="$(find experiment_package)/config/maps/$(arg experiment_number)/map.yaml"/>
+        <arg name="language" default="en" />
         <!--
         LOAD MAP
         -->
@@ -17,7 +18,8 @@
         LOAD ExperimentManager
         -->
         <node pkg="experiment_package" name="experiment_node" type="experiment_node.py" output="screen">
-            <param name="filename" value="$(find experiment_package)/config/$(arg experiment_number)_rooms.json" />
+            <param name="infofilename" value="$(find experiment_package)/config/$(arg experiment_number)_rooms.json" />
+            <param name="soundfilename" value="$(find experiment_package)/config/$(arg language)_sound.json" />
         </node>
 
         <!--

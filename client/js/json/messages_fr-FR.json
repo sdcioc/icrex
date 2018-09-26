@@ -1,0 +1,167 @@
+{
+    "intro_messages": {
+		"promotion"  : "",
+		"prevention" : ""
+    },
+    "messages" : {
+        "start" : " START ",
+        "stop"  : " Quitter ",
+        "main"  : " Lorsque vous êtes prêt, appuyez sur le bouton START ",
+        "end"   : " Je vous remercie pour votre aide ! "
+    },
+    "parameters" : {
+        "no_questions"     : "28"
+    },
+    "questions" : {
+        "q1" : {
+            "top" : "",
+            "question" : "Quand pensez-vous être le plus productif?",
+            "type_answer" : "3a"
+            },
+        "q2" : {
+            "top" : "Quels sont les exigence de votre travail",
+            "question" : "Vite ?",
+            "type_answer"  : "5a"
+        },
+        "q3" : {
+            "top" : "Quels sont les exigence de votre travail?",
+            "question" : "Difficile ?",
+            "type_answer"  : "5a"
+        },
+        "q4" : {
+            "top" : "Quels sont les exigence de votre travail?",
+            "question" : "Beaucoup ?",
+            "type_answer"  : "5a"
+        },
+        "q5" : {
+            "top" : "",
+            "question" : "Avez-vous assez de temps  pour terminer votre travail durant la journée?",
+            "type_answer" : "5a"
+        },
+        "q6" : {
+            "top" : "Comment évaluez-vous l'atmosphère au travail?",
+            "question" : "Calme / Agréable",
+            "type_answer"  : "5b"
+        },
+        "q7" : {
+            "top" : "Comment évaluez-vous l'atmosphère au travail?",
+            "question" : "Bon esprit d'unité",
+            "type_answer"  : "5b"
+        },
+        "q8" : {
+            "top" : "Comment évaluez-vous l'atmosphère au travail?",
+            "question" : "Mes collègues sont là pour moi",
+            "type_answer"  : "5b"
+        },
+        "q9" : {
+            "top" : "",
+            "question" : "Devez-vous garder un oeil sur beaucoup de choses pendant que vous travaillez?",
+            "type_answer" : "1"
+        },
+        "q10" : {
+            "top" : "",
+            "question" : "Est-ce que votre travail exige que vous vous rappeliez de beaucoup de choses?",
+            "type_answer" : "1"
+        },
+        "q11" : {
+            "top" : "",
+            "question" : "Est-ce que votre travail exige que vous soyez doué pour proposer de nouvelles idées?",
+            "type_answer" : "1"
+        },
+        "q12": {
+            "top" : "",
+            "question" : "Est-ce que votre travail exige que vous preniez des décisions difficiles?",
+            "type_answer" : "1"
+        },
+        "q13" : {
+            "top" : "",
+            "question" : "Au travail, je me sens plein d’énergie.",
+            "type_answer" : "3"
+        },
+        "q14" : {
+            "top" : "",
+            "question" : "Je suis enthousiaste à propos de mon travail.",
+            "type_answer" : "3"
+        },
+        "q15" : {
+            "top" : "",
+            "question" : "Je suis immergé dans mon travail.",
+            "type_answer" : "3"
+        },
+        "q16" : {
+            "top" : "Ces questions portent sur votre comportement au cours des 5 dernières semaines.",
+            "question" : "Combien de fois avez-vous eu des problèmes pour vous détendre?",
+            "type_answer" : "9"
+        },
+        "q17" : {
+            "top" : "Ces questions portent sur votre comportement au cours des 5 dernières semaines.",
+            "question" : "Combien de fois avez-vous été irritable?",
+            "type_answer" : "9"
+        },
+        "q18" : {
+            "top" : "Ces questions portent sur votre comportement au cours des 5 dernières semaines.",
+            "question" : "Combien de fois avez-vous été tendu?",
+            "type_answer" : "9"
+        },
+        "q19" : {
+            "top" : "Ces questions portent sur votre comportement au cours des 5 dernières semaines.",
+            "question" : "À quelle fréquence avez-vous eu des problèmes de concentration?",
+            "type_answer" : "9"
+        },
+        "q20" : {
+            "top" : "Ces questions portent sur votre comportement au cours des 5 dernières semaines.",
+            "question" : "Combien de fois avez-vous trouvé difficile de penser clairement?",
+            "type_answer" : "9"
+        },
+        "q21" : {
+            "top" : "Ces questions portent sur votre comportement au cours des 5 dernières semaines.",
+            "question" : "Combien de fois avez-vous eu des difficultés à prendre des décisions?",
+            "type_answer" : "9"
+        },
+        "q22" : {
+            "top" : "Ces questions portent sur votre comportement au cours des 5 dernières semaines.",
+            "question" : "Combien de fois avez-vous eu des difficultés à vous souvenir?",
+            "type_answer" : "9"
+        },
+        "q23" : {
+            "top" : "Dans quelle mesure ces descriptions vous conviennent-elles en tant que personne?",
+            "question" : "Je suis toujours capable de résoudre des problèmes difficiles, si j'essaie assez fort.",
+            "type_answer" : "10"
+        },
+        "q24" : {
+            "top" : "Dans quelle mesure ces descriptions vous conviennent-elles en tant que personne?",
+            "question" : "Si les gens travaillent contre moi, je trouve un moyen de réaliser ce que je veux.",
+            "type_answer" : "10"
+        },
+        "q25" : {
+            "top" : "Dans quelle mesure ces descriptions vous conviennent-elles en tant que personne?",
+            "question" : "Il m'est facile de suivre mes projets et d'atteindre mes objectifs.",
+            "type_answer" : "10"
+        },
+        "q26" : {
+            "top" : "Dans quelle mesure ces descriptions vous conviennent-elles en tant que personne?",
+            "question" : "Je suis convaincu que je peux gérer des événements inattendus.",
+            "type_answer" : "10"
+        },
+        "q27" : {
+            "top" : "Dans quelle mesure ces descriptions vous conviennent-elles en tant que personne?",
+            "question" : "Quand j'ai un problème, je peux généralement trouver plusieurs moyens de le résoudre.",
+            "type_answer" : "10"
+        },
+        "q28" : {
+            "top" : "Dans quelle mesure ces descriptions vous conviennent-elles en tant que personne?",
+            "question" : "Indépendamment de ce qui se passe, je me débrouille généralement.",
+            "type_answer" : "10"
+        }
+
+    },
+    "answers" : {
+        "1"  : "Toujours; Souvent; Parfois; Rarement; Jamais / presque jamais",
+        "3"  : "Jamais; Rarement; Parfois; Souvent; Toujours",
+        "3a" : "Dans le matin; Dans l'après midi; Dans la soirée",
+        "9"  : "Tout le temps; Une grande partie du temps; Une partie du temps; Une petite partie du temps; Pas du tout",
+        "10" : "S'adapte parfaitement; Convient très bien; S'adapte un peu; Ne convient pas",
+        "5b" : "Pas du tout; Légèrement; Modérément; Très; Extrêmement",
+        "5a" : "Jamais; Rarement; Parfois; Souvent; Presque toujours"
+    }
+}
