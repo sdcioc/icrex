@@ -78,5 +78,15 @@ if __name__ == '__main__':
         rospy.sleep(2);
         my_sound_manager.play_second(1);
         rospy.sleep(2);
+        my_sound_manager.play_final(0);
+        rospy.sleep(2);
+        my_sound_manager.play_final(1);
+        rospy.sleep(2);
+        my_sound_manager.play_exit(0);
+        rospy.sleep(2);
+        my_sound_manager.play_exit(1);
+        rospy.sleep(2);
+        my_sound_manager.play_initial();
+        rospy.sleep(2);
     except KeyboardInterrupt:
         pass;
