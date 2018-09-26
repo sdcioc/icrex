@@ -12,6 +12,7 @@ import rospy
 import geometry_msgs.msg
 import std_msgs.msg
 import sensor_msgs.msg
+import pal_web_msgs.msg
 
 ## face detection libraries
 import cv2
@@ -213,6 +214,10 @@ class ExperimentLogicManager:
         self.move_pub = rospy.Publisher(
                     '/move_base_simple/goal',
                         geometry_msgs.msg.PoseStamped,
+                        latch=True, queue_size=5);
+        self.web_pub = rospy.Publisher(
+                    '/web/go_to',
+                        pal_web_msgs.msg.WebGoTo,
                         latch=True, queue_size=5);
         rospy.sleep(3);
         rospy.Subscriber("experiment/cmd", std_msgs.msg.String, self.command_subscriber_callback);
@@ -551,7 +556,11 @@ class ExperimentLogicManager:
         to_publish['room'] = self.poi_name;
         self.events_pub.publish(json.dumps(to_publish));
         self.rate.sleep();
-        #TODO:show the questions lansare index 
+        #TODO:show the questions lansare index
+        web_msg = pal_web_msgs.msg.WebGoTo();
+        web_msg.type = 3;
+        web_msg.value = "/static/webapps/client/experiment/index.html";
+        self.web_pub.publish(web_msg);
         next_command = {};
         if (self.people_number == 2):
             next_command['type'] = "DO_EXPERIMENT";
@@ -561,7 +570,7 @@ class ExperimentLogicManager:
         try:
             reply = rospy.wait_for_message(
             '/experiment/web/cmd',
-            std_msgs.msg.String, 10);
+            std_msgs.msg.String, 30);
             to_publish = {};
             to_publish['event'] = {};
             to_publish['event']['name'] = "EXPERIMENT RESPONDED FIRST {}".format(self.poi_name);
@@ -600,7 +609,7 @@ class ExperimentLogicManager:
             try:
                 reply = rospy.wait_for_message(
                 '/experiment/web/cmd',
-                std_msgs.msg.String, 5);
+                std_msgs.msg.String, 15);
                 to_publish = {};
                 to_publish['event'] = {};
                 to_publish['event']['name'] = "EXPERIMENT RESPONDED SECOND {}".format(self.poi_name);
