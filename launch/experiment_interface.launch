@@ -1,13 +1,6 @@
 <launch>
-    <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch"/>
-
     <rosparam command="load" file="$(find experiment_package)/client/ENSTA.yaml"/>
     <node name="experiment_http_server"
            pkg="experiment_package"
           type="experiment_run_http_server.sh"/>
-
-    <node name="experiment_gui_chrome"
-          pkg="experiment_package"
-          type="experiment_run_interface.sh">
-    </node>
 </launch>

@@ -129,8 +129,8 @@ class SoundManager:
         self.utility = "aplay ";
         self.general_volume_param = "/pal/general_volume";
         self.playback_volume_param = "/pal/playback_volume";
-        rospy.set_param(self.general_volume_param, 60);
-        rospy.set_param(self.playback_volume_param, 60);
+        rospy.set_param(self.general_volume_param, 80);
+        rospy.set_param(self.playback_volume_param, 80);
         rospack = rospkg.RosPack();
         self.prefix = rospack.get_path('experiment_package') + "/config/sounds/";
     
@@ -501,6 +501,7 @@ class ExperimentLogicManager:
             self.events_pub.publish(json.dumps(to_publish));
             self.rate.sleep();
             self.events.append(copy.deepcopy(to_publish));
+            self.sound_manager.play_initial();
     
 
     def manual_check_people_command(self, command):
@@ -592,6 +593,7 @@ class ExperimentLogicManager:
         self.events_pub.publish(json.dumps(to_publish));
         self.rate.sleep();
         self.events.append(copy.deepcopy(to_publish));
+        self.sound_manager
         rospy.loginfo("[DO_EXPERIMENT_MANUAL]  WAITNING FOR SECOND PART");
 
     def do_manual_first_experiment_second_command(self, command):
@@ -658,9 +660,12 @@ class ExperimentLogicManager:
         self.rate.sleep();
         try:
             #waiting to press start
-            reply = rospy.wait_for_message(
-            '/experiment/web/cmd',
-            std_msgs.msg.String, 30);
+            while True:
+                reply = rospy.wait_for_message(
+                '/experiment/web/cmd',
+                std_msgs.msg.String, 30);
+                if (reply.data == "pressStart"):
+                    break;
             to_publish = {};
             to_publish['event'] = {};
             to_publish['event']['name'] = "EXPERIMENT RESPONDED FIRST {}".format(self.poi_name);
@@ -674,9 +679,12 @@ class ExperimentLogicManager:
             rospy.loginfo("[INFO][SECOND_EXPERIMENT] WAITING COMPLETION");
 
             #waitning gor finish
-            finish = rospy.wait_for_message(
-            '/experiment/web/cmd',
-            std_msgs.msg.String);
+            while True:
+                finish = rospy.wait_for_message(
+                '/experiment/web/cmd',
+                std_msgs.msg.String);
+                if (finish.data == "pressQuit"):
+                    break;
             to_publish = {};
             to_publish['event'] = {};
             to_publish['event']['name'] = "EXPERIMENT FINISHED FIRST {}".format(self.poi_name);
@@ -716,9 +724,12 @@ class ExperimentLogicManager:
             self.events.append(copy.deepcopy(to_publish));
             try:
                 #wait again for response
-                reply = rospy.wait_for_message(
-                '/experiment/web/cmd',
-                std_msgs.msg.String, 15);
+                while True:
+                    reply = rospy.wait_for_message(
+                    '/experiment/web/cmd',
+                    std_msgs.msg.String, 15);
+                    if (reply.data == "pressStart"):
+                        break;
                 to_publish = {};
                 to_publish['event'] = {};
                 to_publish['event']['name'] = "EXPERIMENT RESPONDED SECOND {}".format(self.poi_name);
@@ -730,9 +741,12 @@ class ExperimentLogicManager:
                 self.rate.sleep();
                 self.events.append(copy.deepcopy(to_publish));
                 #wait to finish
-                finish = rospy.wait_for_message(
-                '/experiment/web/cmd',
-                std_msgs.msg.String);
+                while True:
+                    finish = rospy.wait_for_message(
+                    '/experiment/web/cmd',
+                    std_msgs.msg.String);
+                    if (finish.data == "pressQuit"):
+                        break;
                 to_publish = {};
                 to_publish['event'] = {};
                 to_publish['event']['name'] = "EXPERIMENT FINIHED SECOND {}".format(self.poi_name);

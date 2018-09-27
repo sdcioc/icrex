@@ -55,11 +55,11 @@ class ExperimentManualCommandManager:
         self.command_pub.publish(json.dumps(next_command));
         self.rate.sleep();       
 
-    def send_manual_check_door_command(self, door):
+    def send_manual_verify_door_command(self, door):
         next_command = {};
-        next_command['type'] = "MANUAL_CHECK_DOOR";
+        next_command['type'] = "MANUAL_VERIFY_DOOR";
         next_command['door'] = door;
-        print "[INFO][MANUAL_COMMAND] sending MANUAL_CHECK_DOOR with dorr: {}".format(door);
+        print "[INFO][MANUAL_COMMAND] sending MANUAL_VERIFY_DOOR with dorr: {}".format(door);
         self.command_pub.publish(json.dumps(next_command));
         self.rate.sleep();
 
@@ -101,7 +101,7 @@ if __name__ == '__main__':
         while(True):
             print """[INFO][MANUAL_COMMAND] command types: \n 
                     0 : START_EXPERIMENT\n
-                    1 : MANUAL_CHECK_DOOR;\n
+                    1 : MANUAL_VERIFY_DOOR;\n
                     2 : MANUAL_SAY_MANY\n
                     3 : MANUAL_CHECK_PEOPLE\n
                     4 : MANUAL_DO_FIRST_EXPERIMENT_FIRST\n
@@ -117,7 +117,7 @@ if __name__ == '__main__':
                 emc.send_start_experiment_command();
             elif (command_number == 1):
                 door = int(raw_input("Enter DOOR OPEN 1/DOOR CLOSED 0:"));
-                emc.send_manual_check_door_command(door);
+                emc.send_manual_verify_door_command(door);
             elif (command_number == 2):
                 emc.send_manual_say_many_command();
             elif (command_number == 3):

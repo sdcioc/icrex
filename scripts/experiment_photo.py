@@ -41,7 +41,7 @@ class PhotoWriter:
                 '/xtion/rgb/image_rect_color',
                 sensor_msgs.msg.Image, 1);
                 frame = self.cvBridge.imgmsg_to_cv2(reply, 'bgr8');
-                cv2.imwrite(self.path_prefix + self.room + rospy.get_time(), frame);
+                cv2.imwrite(self.path_prefix + self.room + str(rospy.get_time()), frame);
             except rospy.exceptions.ROSException:
                 rospy.loginfo("[ERROR][PhotoWriter] No Info from /xtion/rgb/image_rect_color");
                 return -1;
@@ -51,7 +51,7 @@ class PhotoWriter:
 if __name__ == '__main__':
     rospy.init_node('experiment_photo_writer', anonymous=True);
     photoWriter = PhotoWriter();
-    rate = rospy.Rate(1);
+    rate = rospy.Rate(2);
     while not rospy.is_shutdown():
         photoWriter.write_photo();
         rate.sleep();
