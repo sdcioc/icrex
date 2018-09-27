@@ -568,7 +568,7 @@ class ExperimentLogicManager:
         next_command['type'] = "VERIFY_DISTANCE_BACK_PARENT_POI";
         self.command_pub.publish(json.dumps(next_command));
         self.rate.sleep();
-        rospy.set_param('/experiment_package/experiment/speed', 0.8);
+        rospy.set_param('/experiment_package/experiment/speed', 0.6);
         #WRITE THE EVENTS IN FILE
         data_to_write = json.dumps(self.events);
         with open(self.path_prefix + self.poi_name + "_events.json", 'w') as fd:
@@ -609,7 +609,7 @@ class ExperimentLogicManager:
         self.state = "DOING_EXPERIMENT"
         self.guessed_type = random.randint(0,1);
         if(self.guessed_type == 1):
-            rospy.set_param('/experiment_package/experiment/speed', 0.8);
+            rospy.set_param('/experiment_package/experiment/speed', 0.6);
         else:
             rospy.set_param('/experiment_package/experiment/speed', 0.2);
         to_publish = {};
@@ -630,7 +630,7 @@ class ExperimentLogicManager:
         self.state = "DOING_EXPERIMENT"
         self.guessed_type = 1 - self.guessed_type;
         if(self.guessed_type == 1):
-            rospy.set_param('/experiment_package/experiment/speed', 0.8);
+            rospy.set_param('/experiment_package/experiment/speed', 0.6);
         else:
             rospy.set_param('/experiment_package/experiment/speed', 0.2);
         to_publish = {};
@@ -650,7 +650,7 @@ class ExperimentLogicManager:
         self.state = "DOING_EXPERIMENT"
         self.guessed_type = command['guessed_type'];
         if(self.guessed_type == 1):
-            rospy.set_param('/experiment_package/experiment/speed', 0.8);
+            rospy.set_param('/experiment_package/experiment/speed', 0.6);
         else:
             rospy.set_param('/experiment_package/experiment/speed', 0.2);
         to_publish = {};
@@ -701,6 +701,7 @@ class ExperimentLogicManager:
                 reply = rospy.wait_for_message(
                 '/experiment/web/cmd',
                 std_msgs.msg.String, 30);
+                rospy.loginfo("[INFO][EXPERIMENT_FIRST] gettin {}".format(reply));
                 if (reply.data == "pressStart"):
                     break;
             to_publish = {};
@@ -720,6 +721,7 @@ class ExperimentLogicManager:
                 finish = rospy.wait_for_message(
                 '/experiment/web/cmd',
                 std_msgs.msg.String);
+                rospy.loginfo("[INFO][FINISH_FIRST] gettin {}".format(finish));
                 if (finish.data == "pressQuit"):
                     break;
             to_publish = {};
@@ -765,6 +767,7 @@ class ExperimentLogicManager:
                     reply = rospy.wait_for_message(
                     '/experiment/web/cmd',
                     std_msgs.msg.String, 15);
+                    rospy.loginfo("[INFO][EXPERIMENT_SECOND] gettin {}".format(reply));
                     if (reply.data == "pressStart"):
                         break;
                 to_publish = {};
@@ -782,6 +785,7 @@ class ExperimentLogicManager:
                     finish = rospy.wait_for_message(
                     '/experiment/web/cmd',
                     std_msgs.msg.String);
+                    rospy.loginfo("[INFO][FINISH_SECOND] gettin {}".format(finish));
                     if (finish.data == "pressQuit"):
                         break;
                 to_publish = {};
