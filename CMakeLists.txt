@@ -158,6 +158,9 @@ install(PROGRAMS
   scripts/experiment_sound_test.py
   scripts/experiment_run_http_server.sh
   scripts/experiment_run_interface.sh
+  scripts/experiment_old_node.py
+  scripts/experiment_photo.py
+  scripts/experiment_manual_interface.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
  )
 
