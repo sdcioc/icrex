@@ -752,10 +752,13 @@ class ExperimentLogicManager:
                 to_publish['event'] = {};
                 to_publish['event']['name'] = "EXPERIMENT NOT RESPONDED {}".format(self.poi_name);
                 to_publish['event']['guessed_type'] = self.guessed_type;
+                to_publish['event']['type'] = "EXPERIMENT_REFUSED";
                 to_publish['time'] = rospy.get_time();
                 self.events_pub.publish(json.dumps(to_publish));
                 self.rate.sleep();
                 self.events.append(copy.deepcopy(to_publish));
+                #play final sound
+                self.sound_manager.play_final(self.guessed_type);
 
     def stop_command(self, command):
         rospy.loginfo("[STOP] going from state {} to STOP".format(self.state));
