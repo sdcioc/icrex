@@ -161,6 +161,7 @@ install(PROGRAMS
   scripts/experiment_old_node.py
   scripts/experiment_photo.py
   scripts/experiment_manual_interface.py
+  scripts/experiment_key_teleop.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
  )
 

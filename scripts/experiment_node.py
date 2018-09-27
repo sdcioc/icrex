@@ -269,6 +269,8 @@ class ExperimentLogicManager:
                 self.manual_check_people_command(current_command);
             elif (current_command['type'] == "GOTO_BACK_PARENT_POI"):
                 self.goto_back_parent_poi_command(current_command);
+            elif (current_command['type'] == "SILENT_GOTO_BACK_PARENT_POI"):
+                self.silent_goto_back_parent_poi_command(current_command);
             elif (current_command['type'] == "VERIFY_DISTANCE_BACK_PARENT_POI"):
                 self.verify_distance_back_parent_poi_command(current_command);
             elif (current_command['type'] == "MANUAL_DO_FIRST_EXPERIMENT_FIRST"):
@@ -345,10 +347,10 @@ class ExperimentLogicManager:
         rospy.loginfo("[START_NEXT_POI] Goint to {}".format(self.parent_poi_name));
         #publish event that is going to a new room
         to_publish = {};
-        to_publish['room'] = self.poi_name;
         to_publish['event'] = {};
         to_publish['event']['name'] = "SELECTING NEXT POINT {} WITH PARENT {}".format(self.poi_name, self.parent_poi_name);
         to_publish['event']['type'] = "GOTO_ROOM";
+        to_publish['room'] = self.poi_name;
         to_publish['time'] = rospy.get_time();
         self.events_pub.publish(json.dumps(to_publish));
         self.rate.sleep();
@@ -378,6 +380,7 @@ class ExperimentLogicManager:
         to_publish['event'] = {};
         to_publish['event']['name'] = "FINSIH EXPERIMENT";
         to_publish['event']['type'] = "EXPERIMENT_FINISHED";
+        to_publish['room'] = "NOROOM";
         to_publish['time'] = rospy.get_time();
         self.events_pub.publish(json.dumps(to_publish));
         self.rate.sleep();
@@ -413,9 +416,9 @@ class ExperimentLogicManager:
             to_publish = {};
             to_publish['event'] = {};
             to_publish['event']['name'] = "ARRIVED PARENT POINT {}".format(self.parent_poi_name);
-            to_publish['time'] = rospy.get_time();
             to_publish['event']['type'] = "ARRIVED_ROOM_DOOR";
             to_publish['room'] = self.poi_name;
+            to_publish['time'] = rospy.get_time();
             self.events_pub.publish(json.dumps(to_publish));
             self.rate.sleep();
             self.events.append(copy.deepcopy(to_publish));
@@ -440,8 +443,8 @@ class ExperimentLogicManager:
             next_command['type'] = "NEXT_POI";
             to_publish['event']['name'] = "DOOR CLOSED POINT {} WITH PARENT {}".format(self.poi_name, self.parent_poi_name);
             to_publish['event']['type'] = "DOOR_CLOSED";
-        to_publish['time'] = rospy.get_time();
         to_publish['room'] = self.poi_name;
+        to_publish['time'] = rospy.get_time();
         self.events_pub.publish(json.dumps(to_publish));
         self.rate.sleep();
         self.events.append(copy.deepcopy(to_publish));
@@ -474,9 +477,9 @@ class ExperimentLogicManager:
             to_publish = {};
             to_publish['event'] = {};
             to_publish['event']['name'] = "ARRIVED POINT {}".format(self.poi_name);
-            to_publish['time'] = rospy.get_time();
             to_publish['event']['type'] = "ARRIVED_ROOM";
             to_publish['room'] = self.poi_name;
+            to_publish['time'] = rospy.get_time();
             self.events_pub.publish(json.dumps(to_publish));
             self.rate.sleep();
             self.events.append(copy.deepcopy(to_publish));
@@ -495,13 +498,23 @@ class ExperimentLogicManager:
             to_publish = {};
             to_publish['event'] = {};
             to_publish['event']['name'] = "START CHECKING PEOPLE POINT {}".format(self.parent_poi_name);
-            to_publish['time'] = rospy.get_time();
             to_publish['event']['type'] = "CHECK_PEOPLE";
             to_publish['room'] = self.poi_name;
+            to_publish['time'] = rospy.get_time();
             self.events_pub.publish(json.dumps(to_publish));
             self.rate.sleep();
             self.events.append(copy.deepcopy(to_publish));
             self.sound_manager.play_initial();
+            to_publish = {};
+            to_publish['event'] = {};
+            to_publish['event']['name'] = "EXPERIMENT FINISHED INTIAL SOUND {}".format(self.poi_name);
+            to_publish['event']['guessed_type'] = self.guessed_type;
+            to_publish['event']['type'] = "INITIAL_SOUND";
+            to_publish['room'] = self.poi_name;
+            to_publish['time'] = rospy.get_time();
+            self.events_pub.publish(json.dumps(to_publish));
+            self.rate.sleep();
+            self.events.append(copy.deepcopy(to_publish));
     
 
     def manual_check_people_command(self, command):
@@ -510,10 +523,10 @@ class ExperimentLogicManager:
         to_publish = {};
         to_publish['event'] = {};
         to_publish['event']['name'] = "FOUND PEOPLE POINT {}".format(self.parent_poi_name);
-        to_publish['time'] = rospy.get_time();
         to_publish['event']['type'] = "FOUND_PEOPLE";
         to_publish['event']['number'] = self.people_number;
         to_publish['room'] = self.poi_name;
+        to_publish['time'] = rospy.get_time();
         self.events_pub.publish(json.dumps(to_publish));
         self.rate.sleep();
         self.events.append(copy.deepcopy(to_publish));
@@ -533,9 +546,9 @@ class ExperimentLogicManager:
         to_publish = {};
         to_publish['event'] = {};
         to_publish['event']['name'] = "GO bACK parent POINT {}".format(self.parent_poi_name);
-        to_publish['time'] = rospy.get_time();
         to_publish['event']['type'] = "LEAVING_ROOM";
         to_publish['room'] = self.poi_name;
+        to_publish['time'] = rospy.get_time();
         self.events_pub.publish(json.dumps(to_publish));
         self.rate.sleep();
         self.events.append(copy.deepcopy(to_publish));
@@ -555,11 +568,23 @@ class ExperimentLogicManager:
         next_command['type'] = "VERIFY_DISTANCE_BACK_PARENT_POI";
         self.command_pub.publish(json.dumps(next_command));
         self.rate.sleep();
+        rospy.set_param('/experiment_package/experiment/speed', 0.8);
         #WRITE THE EVENTS IN FILE
         data_to_write = json.dumps(self.events);
         with open(self.path_prefix + self.poi_name + "_events.json", 'w') as fd:
             fd.write(data_to_write);
-        
+    
+    def silent_goto_back_parent_poi_command(self, command):
+        rospy.loginfo("[SILENT_GOTO_BACK_PARENT_POI] going from state {} to GOING_TO_BACK_PARENT_POI".format(self.state));
+        #set the new move goal
+        self.move_pub.publish(self.parent_poi_position);
+        self.rate.sleep();
+        #VERIFY IF ARRIVED
+        next_command = {};
+        next_command['type'] = "VERIFY_DISTANCE_BACK_PARENT_POI";
+        self.command_pub.publish(json.dumps(next_command));
+        self.rate.sleep();
+
     def verify_distance_back_parent_poi_command(self, command):
         rospy.loginfo("[VERIFY_DISTANCE_BACK_PARENT_POI] going from state {} to GOING_TO_BACK_PARENT_POI".format(self.state));
         current_distance = self.get_distance(self.current_position, self.parent_poi_position);
@@ -583,13 +608,17 @@ class ExperimentLogicManager:
         rospy.loginfo("[DO_EXPERIMENT_MANUAL_FIRST] going from state {} to DOING_EXPERIMENT".format(self.state));
         self.state = "DOING_EXPERIMENT"
         self.guessed_type = random.randint(0,1);
+        if(self.guessed_type == 1):
+            rospy.set_param('/experiment_package/experiment/speed', 0.8);
+        else:
+            rospy.set_param('/experiment_package/experiment/speed', 0.2);
         to_publish = {};
         to_publish['event'] = {};
         to_publish['event']['name'] = "EXPERIMENT STARTED {}".format(self.poi_name);
         to_publish['event']['guessed_type'] = self.guessed_type;
         to_publish['event']['type'] = "START_EXPERIMENT";
-        to_publish['time'] = rospy.get_time();
         to_publish['room'] = self.poi_name;
+        to_publish['time'] = rospy.get_time();
         self.events_pub.publish(json.dumps(to_publish));
         self.rate.sleep();
         self.events.append(copy.deepcopy(to_publish));
@@ -600,13 +629,17 @@ class ExperimentLogicManager:
         rospy.loginfo("[DO_EXPERIMENT_MANUAL_SECOND] going from state {} to DOING_EXPERIMENT".format(self.state));
         self.state = "DOING_EXPERIMENT"
         self.guessed_type = 1 - self.guessed_type;
+        if(self.guessed_type == 1):
+            rospy.set_param('/experiment_package/experiment/speed', 0.8);
+        else:
+            rospy.set_param('/experiment_package/experiment/speed', 0.2);
         to_publish = {};
         to_publish['event'] = {};
         to_publish['event']['name'] = "EXPERIMENT STARTED {}".format(self.poi_name);
         to_publish['event']['guessed_type'] = self.guessed_type;
         to_publish['event']['type'] = "START_EXPERIMENT";
-        to_publish['time'] = rospy.get_time();
         to_publish['room'] = self.poi_name;
+        to_publish['time'] = rospy.get_time();
         self.events_pub.publish(json.dumps(to_publish));
         self.rate.sleep();
         self.events.append(copy.deepcopy(to_publish));
@@ -616,13 +649,17 @@ class ExperimentLogicManager:
         rospy.loginfo("[DO_EXPERIMENT_MANUAL_CHOSEN] going from state {} to DOING_EXPERIMENT".format(self.state));
         self.state = "DOING_EXPERIMENT"
         self.guessed_type = command['guessed_type'];
+        if(self.guessed_type == 1):
+            rospy.set_param('/experiment_package/experiment/speed', 0.8);
+        else:
+            rospy.set_param('/experiment_package/experiment/speed', 0.2);
         to_publish = {};
         to_publish['event'] = {};
         to_publish['event']['name'] = "EXPERIMENT STARTED {}".format(self.poi_name);
         to_publish['event']['guessed_type'] = self.guessed_type;
         to_publish['event']['type'] = "START_EXPERIMENT";
-        to_publish['time'] = rospy.get_time();
         to_publish['room'] = self.poi_name;
+        to_publish['time'] = rospy.get_time();
         self.events_pub.publish(json.dumps(to_publish));
         self.rate.sleep();
         self.events.append(copy.deepcopy(to_publish));
@@ -635,8 +672,8 @@ class ExperimentLogicManager:
         to_publish['event']['name'] = "EXPERIMENT STRTED LOOK UP {}".format(self.poi_name);
         to_publish['event']['guessed_type'] = self.guessed_type;
         to_publish['event']['type'] = "SPEAKING_FIRST";
-        to_publish['time'] = rospy.get_time();
         to_publish['room'] = self.poi_name;
+        to_publish['time'] = rospy.get_time();
         self.events_pub.publish(json.dumps(to_publish));
         self.rate.sleep();
         self.events.append(copy.deepcopy(to_publish));
@@ -644,11 +681,11 @@ class ExperimentLogicManager:
         self.state = "EXPERIMENT_WAITING_FIRST";
         to_publish = {};
         to_publish['event'] = {};
-        to_publish['event']['name'] = "EXPERIMENT FINISHED INITIAL SOUND {}".format(self.poi_name);
+        to_publish['event']['name'] = "EXPERIMENT FINISHED FIRST SOUND {}".format(self.poi_name);
         to_publish['event']['guessed_type'] = self.guessed_type;
         to_publish['event']['type'] = "WAITING_FIRST_RESPONSE";
-        to_publish['time'] = rospy.get_time();
         to_publish['room'] = self.poi_name;
+        to_publish['time'] = rospy.get_time();
         self.events_pub.publish(json.dumps(to_publish));
         self.rate.sleep();
         self.events.append(copy.deepcopy(to_publish));
@@ -671,8 +708,8 @@ class ExperimentLogicManager:
             to_publish['event']['name'] = "EXPERIMENT RESPONDED FIRST {}".format(self.poi_name);
             to_publish['event']['guessed_type'] = self.guessed_type;
             to_publish['event']['type'] = "WAITING_STOP";
-            to_publish['time'] = rospy.get_time();
             to_publish['room'] = self.poi_name;
+            to_publish['time'] = rospy.get_time();
             self.events_pub.publish(json.dumps(to_publish));
             self.rate.sleep();
             self.events.append(copy.deepcopy(to_publish));
@@ -690,8 +727,8 @@ class ExperimentLogicManager:
             to_publish['event']['name'] = "EXPERIMENT FINISHED FIRST {}".format(self.poi_name);
             to_publish['event']['guessed_type'] = self.guessed_type;
             to_publish['event']['type'] = "EXPERIMENT_FINISHED";
-            to_publish['time'] = rospy.get_time();
             to_publish['room'] = self.poi_name;
+            to_publish['time'] = rospy.get_time();
             self.events_pub.publish(json.dumps(to_publish));
             self.rate.sleep();
             self.events.append(copy.deepcopy(to_publish));
@@ -705,8 +742,8 @@ class ExperimentLogicManager:
             to_publish['event']['name'] = "EXPERIMENT SECOND TRY {}".format(self.poi_name);
             to_publish['event']['guessed_type'] = self.guessed_type;
             to_publish['event']['type'] = "SPEAKING_SECOND";
-            to_publish['time'] = rospy.get_time();
             to_publish['room'] = self.poi_name;
+            to_publish['time'] = rospy.get_time();
             self.events_pub.publish(json.dumps(to_publish));
             self.rate.sleep();
             self.events.append(copy.deepcopy(to_publish));
@@ -717,8 +754,8 @@ class ExperimentLogicManager:
             to_publish['event']['name'] = "EXPERIMENT SECOND {}".format(self.poi_name);
             to_publish['event']['guessed_type'] = self.guessed_type;
             to_publish['event']['type'] = "WAITING_SECOND_RESPONSE";
-            to_publish['time'] = rospy.get_time();
             to_publish['room'] = self.poi_name;
+            to_publish['time'] = rospy.get_time();
             self.events_pub.publish(json.dumps(to_publish));
             self.rate.sleep();
             self.events.append(copy.deepcopy(to_publish));
@@ -735,8 +772,8 @@ class ExperimentLogicManager:
                 to_publish['event']['name'] = "EXPERIMENT RESPONDED SECOND {}".format(self.poi_name);
                 to_publish['event']['guessed_type'] = self.guessed_type;
                 to_publish['event']['type'] = "WAITING_STOP";
-                to_publish['time'] = rospy.get_time();
                 to_publish['room'] = self.poi_name;
+                to_publish['time'] = rospy.get_time();
                 self.events_pub.publish(json.dumps(to_publish));
                 self.rate.sleep();
                 self.events.append(copy.deepcopy(to_publish));
@@ -752,8 +789,8 @@ class ExperimentLogicManager:
                 to_publish['event']['name'] = "EXPERIMENT FINIHED SECOND {}".format(self.poi_name);
                 to_publish['event']['guessed_type'] = self.guessed_type;
                 to_publish['event']['type'] = "EXPERIMENT_FINISHED";
-                to_publish['time'] = rospy.get_time();
                 to_publish['room'] = self.poi_name;
+                to_publish['time'] = rospy.get_time();
                 self.events_pub.publish(json.dumps(to_publish));
                 self.rate.sleep();
                 self.events.append(copy.deepcopy(to_publish));
@@ -767,12 +804,18 @@ class ExperimentLogicManager:
                 to_publish['event']['name'] = "EXPERIMENT NOT RESPONDED {}".format(self.poi_name);
                 to_publish['event']['guessed_type'] = self.guessed_type;
                 to_publish['event']['type'] = "EXPERIMENT_REFUSED";
+                to_publish['room'] = self.poi_name;
                 to_publish['time'] = rospy.get_time();
                 self.events_pub.publish(json.dumps(to_publish));
                 self.rate.sleep();
                 self.events.append(copy.deepcopy(to_publish));
                 #play final sound
                 self.sound_manager.play_final(self.guessed_type);
+        web_msg = pal_web_msgs.msg.WebGoTo();
+        web_msg.type = 3;
+        web_msg.value = "/static/webapps/client/experiment/white.html";
+        self.web_pub.publish(web_msg);
+        self.rate.sleep();
 
     def stop_command(self, command):
         rospy.loginfo("[STOP] going from state {} to STOP".format(self.state));

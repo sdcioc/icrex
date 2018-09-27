@@ -35,4 +35,10 @@
         <node pkg="experiment_package" name="experiment_path_writer" type="experiment_path_writer.py">
             <param name="filename" value="$(find experiment_package)/logs/$(arg experiment_number)_path.json" />
         </node>
+
+        <!--
+        LOAD Photo writer
+        -->
+        <node pkg="experiment_package" name="experiment_photo_writer" type="experiment_photo.py">
+        </node>
 </launch>

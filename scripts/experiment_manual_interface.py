@@ -110,7 +110,9 @@ if __name__ == '__main__':
                     7 : MANUAL_DO_SECOND_EXPERIMENT\n
                     8 : STOP\n
                     9 : START_NEXT_POI\n
-                    10: EXIT
+                    10: GOTOPARENT\n
+                    11: SILENT_GOTOPARENT\n
+                    12: EXIT
                     """
             command_number = int(raw_input("Enter your command:\n"));
             if (command_number == 0):
@@ -143,6 +145,10 @@ if __name__ == '__main__':
                 elif (command_number == 7):
                     command_type = "MANUAL_DO_SECOND_EXPERIMENT"
                 elif (command_number == 10):
+                    command_type = "GOTO_BACK_PARENT_POI"
+                elif (command_number == 11):
+                    command_type = "SILENT_GOTO_BACK_PARENT_POI"
+                elif (command_number == 12):
                     break;
                 else:
                     print "[ERORRE][MANUAL_COMMAND] command_number {}".format(command_number);
