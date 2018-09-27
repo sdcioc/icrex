@@ -180,7 +180,7 @@ class SoundManager:
         command = command + language + "_initial.wav";
         subprocess.check_output(command.split());
 
-    def play_mmany(self):
+    def play_many(self):
         command = self.utility + self.prefix;
         language = rospy.get_param("/user_lang")[0:2];
         command = command + language + "_many.wav";

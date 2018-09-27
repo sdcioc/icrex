@@ -228,7 +228,7 @@ class SimpleKeyTeleop():
             linear += l
             angular += a
         if linear > 0:
-            linear = linear * self._forward_rate
+            linear = linear * rospy.get_param('/experiment_package/experiment/speed', 0.4)
         else:
             linear = linear * self._backward_rate
         angular = angular * self._rotation_rate
