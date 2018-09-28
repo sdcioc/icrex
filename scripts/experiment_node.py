@@ -283,6 +283,8 @@ class ExperimentLogicManager:
                 self.do_manual_second_experiment_command(current_command);
             elif (current_command['type'] == "MANUAL_SAY_MANY"):
                 self.do_manual_speak_to_many(current_command);
+            elif (current_command['type'] == "MANUAL_SPEAK_INITIAL"):
+                self.do_manual_speak_inital(current_command);
             elif (current_command['type'] == "STOP"):
                 self.stop_command(current_command);
             elif (current_command['type'] == "START_EXPERIMENT"):
@@ -504,17 +506,7 @@ class ExperimentLogicManager:
             self.events_pub.publish(json.dumps(to_publish));
             self.rate.sleep();
             self.events.append(copy.deepcopy(to_publish));
-            self.sound_manager.play_initial();
-            to_publish = {};
-            to_publish['event'] = {};
-            to_publish['event']['name'] = "EXPERIMENT FINISHED INTIAL SOUND {}".format(self.poi_name);
-            to_publish['event']['guessed_type'] = self.guessed_type;
-            to_publish['event']['type'] = "INITIAL_SOUND";
-            to_publish['room'] = self.poi_name;
-            to_publish['time'] = rospy.get_time();
-            self.events_pub.publish(json.dumps(to_publish));
-            self.rate.sleep();
-            self.events.append(copy.deepcopy(to_publish));
+            #self.sound_manager.play_initial();
     
 
     def manual_check_people_command(self, command):
@@ -599,6 +591,21 @@ class ExperimentLogicManager:
         self.command_pub.publish(json.dumps(next_command));
         self.rate.sleep();
     
+    def do_manual_speak_inital(self, command):
+        rospy.loginfo("[MANUAL SPEAK INITIAL] going from state {} to MANY_PEOPLE".format(self.state));
+        #play the message to mcuh people
+        self.sound_manager.play_initial();
+        to_publish = {};
+        to_publish['event'] = {};
+        to_publish['event']['name'] = "EXPERIMENT FINISHED INTIAL SOUND {}".format(self.poi_name);
+        to_publish['event']['guessed_type'] = self.guessed_type;
+        to_publish['event']['type'] = "INITIAL_SOUND";
+        to_publish['room'] = self.poi_name;
+        to_publish['time'] = rospy.get_time();
+        self.events_pub.publish(json.dumps(to_publish));
+        self.rate.sleep();
+        self.events.append(copy.deepcopy(to_publish));
+
     def do_manual_speak_to_many(self, command):
         rospy.loginfo("[MANUAL SPEAK] going from state {} to MANY_PEOPLE".format(self.state));
         #play the message to mcuh people
@@ -622,7 +629,6 @@ class ExperimentLogicManager:
         self.events_pub.publish(json.dumps(to_publish));
         self.rate.sleep();
         self.events.append(copy.deepcopy(to_publish));
-        self.sound_manager
         rospy.loginfo("[DO_EXPERIMENT_MANUAL]  WAITNING FOR SECOND PART");
 
     def do_manual_first_experiment_second_command(self, command):

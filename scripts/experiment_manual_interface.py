@@ -112,7 +112,8 @@ if __name__ == '__main__':
                     9 : START_NEXT_POI\n
                     10: GOTOPARENT\n
                     11: SILENT_GOTOPARENT\n
-                    12: EXIT
+                    12: MANUAL_SPEAK_INITIAL\n
+                    13: EXIT
                     """
             command_number = int(raw_input("Enter your command:\n"));
             if (command_number == 0):
@@ -132,10 +133,7 @@ if __name__ == '__main__':
                 emc.send_stop_command();
             elif (command_number == 9):
                 poi_name = raw_input("Enter POI name");
-                emc.send_start_next_poi_command(poi_name)
-            elif (command_number == 12):
-                poi_name = raw_input("Enter POI name");
-                emc.send_force_poi_command(poi_name)
+                emc.send_start_next_poi_command(poi_name);
             else:
                 command_type = "";
                 if (command_number == 4):
@@ -149,6 +147,8 @@ if __name__ == '__main__':
                 elif (command_number == 11):
                     command_type = "SILENT_GOTO_BACK_PARENT_POI"
                 elif (command_number == 12):
+                    command_type = "MANUAL_SPEAK_INITIAL"
+                elif (command_number == 13):
                     break;
                 else:
                     print "[ERORRE][MANUAL_COMMAND] command_number {}".format(command_number);
