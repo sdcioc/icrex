@@ -28,8 +28,8 @@ class MapDraw:
             to_publish.action = visualization_msgs.msg.Marker.ADD;
             to_publish.type = visualization_msgs.msg.Marker.ARROW;
             to_publish.id = i;
-            to_publish.points.append(geometry_msgs.msg.Point(self.my_points[2*i]['position']['x'], self.my_points[2*i]['position']['y'], self.my_points[2*i]['position']['z']);
-            to_publish.points.append(geometry_msgs.msg.Point(self.my_points[2*i+1]['position']['x'], self.my_points[2*i+1]['position']['y'], self.my_points[2*i+1]['position']['z']);
+            to_publish.points.append(geometry_msgs.msg.Point(self.my_points[2*i]['position']['x'], self.my_points[2*i]['position']['y'], self.my_points[2*i]['position']['z']));
+            to_publish.points.append(geometry_msgs.msg.Point(self.my_points[2*i+1]['position']['x'], self.my_points[2*i+1]['position']['y'], self.my_points[2*i+1]['position']['z']));
 
             to_publish.scale.x = 0.1;
             to_publish.scale.y = 0.2;
