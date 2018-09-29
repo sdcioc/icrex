@@ -17,6 +17,7 @@ class MapDraw:
                                         visualization_msgs.msg.Marker, latch=True, queue_size=10)
         rospy.sleep(1);
         self.rate = rospy.Rate(10);
+            """
         self.my_points = [json.loads(line.rstrip('\n')) for line in open(self.filename, 'r')]
         self.my_points.sort(key=lambda point: float(point['time']));
         # de modificat gresit
@@ -43,7 +44,6 @@ class MapDraw:
 
             self.marker_pub.publish(to_publish);
             self.rate.sleep();
-            """
         to_publish = {};
         to_publish['pose'] = {};
         to_publish['pose']['position'] = {};
@@ -86,14 +86,67 @@ class MapDraw:
 
         self.marker_pub.publish(a);
         """
+    def draw_file_arrow(self, filename):
+        my_points = [json.loads(line.rstrip('\n')) for line in open(filename, 'r')]
+        my_points.sort(key=lambda point: float(point['time']));
+        # de modificat gresit
+        for i in range((len(self.my_points)/2)):
+            to_publish = visualization_msgs.msg.Marker();
+            to_publish.header.frame_id = "/map";
+            to_publish.header.stamp = rospy.get_time();
+            to_publish.ns = "experiment" + "_" + filename;
+            to_publish.action = visualization_msgs.msg.Marker.ADD;
+            to_publish.type = visualization_msgs.msg.Marker.ARROW;
+            to_publish.id = i;
+            to_publish.points.append(geometry_msgs.msg.Point(self.my_points[2*i]['pose']['position']['x'], self.my_points[2*i]['pose']['position']['y'], self.my_points[2*i]['pose']['position']['z']));
+            to_publish.points.append(geometry_msgs.msg.Point(self.my_points[2*i+1]['pose']['position']['x'], self.my_points[2*i+1]['pose']['position']['y'], self.my_points[2*i+1]['pose']['position']['z']));
+
+            to_publish.scale.x = 0.1;
+            to_publish.scale.y = 0.2;
+            to_publish.scale.z = 0.2;
+            #
+        
+            to_publish.color.a = 1.0;
+            to_publish.color.r = 0.5;
+            to_publish.color.g = 0.1;
+            to_publish.color.b = 0.1;
+
+            self.marker_pub.publish(to_publish);
+            self.rate.sleep();
+
+    def draw_file_line(self, filename):
+        my_points = [json.loads(line.rstrip('\n')) for line in open(filename, 'r')]
+        my_points.sort(key=lambda point: float(point['time']));
+        # de modificat gresit
+        to_publish = visualization_msgs.msg.Marker();
+        to_publish.header.frame_id = "/map";
+        to_publish.header.stamp = rospy.get_time();
+        to_publish.ns = "experiment" + "_" + filename;
+        to_publish.action = visualization_msgs.msg.Marker.ADD;
+        to_publish.type = visualization_msgs.msg.Marker.LINE_STRIP;
+        to_publish.id = 0;
+        to_publish.scale.x = 0.1;
+        to_publish.scale.y = 0.2;
+        to_publish.scale.z = 0.2;
+        #
+    
+        to_publish.color.a = 1.0;
+        to_publish.color.r = 0.1;
+        to_publish.color.g = 0.5;
+        to_publish.color.b = 0.1;
+        for  my_point in my_points:
+            to_publish.points.append(geometry_msgs.msg.Point(self.my_point['pose']['position']['x'], self.my_point['pose']['position']['y'], self.my_point['pose']['position']['z']));
+        self.marker_pub.publish(to_publish);
+        self.rate.sleep();
 
 if __name__ == '__main__':
     rospy.init_node('experiment_map_draw', anonymous=True);  
     filename = rospy.get_param('~filename', '/home/pal/default_path.json')
     print "[INFO][EVENTS_WRITER] filename : {}".format(filename);
     #test_Writer_classes();
-    pathWriter = MapDraw(filename);
+    mapDraw = MapDraw(filename);
     try:
+        mapDraw.draw_file_line('/home/ciocirlan/1_path.json');
         rospy.spin();
     except KeyboardInterrupt:
         pass;
