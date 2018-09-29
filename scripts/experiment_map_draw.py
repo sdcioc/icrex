@@ -17,7 +17,7 @@ class MapDraw:
                                         visualization_msgs.msg.Marker, latch=True, queue_size=10)
         rospy.sleep(1);
         self.rate = rospy.Rate(10);
-        self.my_points = [json.loads(line.rstrip('\n') for line in open(self.filename, 'r'))]
+        self.my_points = [json.loads(line.rstrip('\n')) for line in open(self.filename, 'r')]
         self.my_points.sort(key=lambda point: float(point['time']));
         # de modificat gresit
         for i in range((len(self.my_points)/2)):
@@ -25,11 +25,11 @@ class MapDraw:
             to_publish.header.frame_id = "/map";
             to_publish.header.stamp = rospy.get_time();
             to_publish.ns = "experiment";
-            to_publish.action = visualization_msgs.msg.ADD;
-            to_publish.type = visualization_msgs.msg.ARROW;
+            to_publish.action = visualization_msgs.msg.Marker.ADD;
+            to_publish.type = visualization_msgs.msg.Marker.ARROW;
             to_publish.id = i;
-            to_publish.points.append(geometry_msgs.msg.Point(self.my_points[2*i].position.x, self.my_points[2*i].position.y, self.my_points[2*i].position.z));
-            to_publish.points.append(geometry_msgs.msg.Point(self.my_points[2*i+1].position.x, self.my_points[2*i+1].position.y, self.my_points[2*i+1].position.z));
+            to_publish.points.append(geometry_msgs.msg.Point(self.my_points[2*i]['position']['x'], self.my_points[2*i]['position']['y'], self.my_points[2*i]['position']['z']);
+            to_publish.points.append(geometry_msgs.msg.Point(self.my_points[2*i+1]['position']['x'], self.my_points[2*i+1]['position']['y'], self.my_points[2*i+1]['position']['z']);
 
             to_publish.scale.x = 0.1;
             to_publish.scale.y = 0.2;
