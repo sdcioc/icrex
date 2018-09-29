@@ -17,7 +17,7 @@ class MapDraw:
                                         visualization_msgs.msg.Marker, latch=True, queue_size=10)
         rospy.sleep(1);
         self.rate = rospy.Rate(10);
-            """
+        """
         self.my_points = [json.loads(line.rstrip('\n')) for line in open(self.filename, 'r')]
         self.my_points.sort(key=lambda point: float(point['time']));
         # de modificat gresit
@@ -135,7 +135,7 @@ class MapDraw:
         to_publish.color.g = 0.5;
         to_publish.color.b = 0.1;
         for  my_point in my_points:
-            to_publish.points.append(geometry_msgs.msg.Point(self.my_point['pose']['position']['x'], self.my_point['pose']['position']['y'], self.my_point['pose']['position']['z']));
+            to_publish.points.append(geometry_msgs.msg.Point(my_point['pose']['position']['x'], my_point['pose']['position']['y'], my_point['pose']['position']['z']));
         self.marker_pub.publish(to_publish);
         self.rate.sleep();
 
