@@ -162,6 +162,7 @@ install(PROGRAMS
   scripts/experiment_photo.py
   scripts/experiment_manual_interface.py
   scripts/experiment_key_teleop.py
+  scripts/experiment_map_draw.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
  )
 
