@@ -1,0 +1,17 @@
+<launch>
+        <arg name="experiment_number" default="1" />
+        <arg name="map_file" default="$(find experiment_package)/config/maps/$(arg experiment_number)/map.yaml"/>
+        <arg name="language" default="en" />
+        <!--
+        LOAD MAP
+        -->
+        <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
+
+        <!--
+        LOAD MapDraw
+        -->
+        <node pkg="experiment_package" name="experiment_map_draw" type="experiment_map_draw.py">
+            <param name="filename" value="$(find experiment_package)/logs/$(arg experiment_number)_path.json" />
+        </node>
+
+</launch>
