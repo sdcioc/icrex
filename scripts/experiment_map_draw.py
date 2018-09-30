@@ -149,6 +149,32 @@ class MapDraw:
 
         self.marker_pub.publish(to_publish);
         self.rate.sleep();
+
+    def draw_file_points(self, filename):
+        my_points = [json.loads(line.rstrip('\n')) for line in open(filename, 'r')]
+        my_points.sort(key=lambda point: float(point['time']));
+        # de modificat gresit
+        to_publish = visualization_msgs.msg.Marker();
+        to_publish.header.frame_id = "/map";
+        #to_publish.header.stamp = rospy.get_time();
+        to_publish.ns = "experiment" + "_" + filename;
+        to_publish.action = visualization_msgs.msg.Marker.ADD;
+        to_publish.type = visualization_msgs.msg.Marker.POINTS;
+        to_publish.id = 0;
+        to_publish.scale.x = 0.1;
+        to_publish.scale.y = 0.2;
+        to_publish.scale.z = 0.2;
+        #
+    
+        to_publish.color.a = 1.0;
+        to_publish.color.r = 0.8;
+        to_publish.color.g = 0.1;
+        to_publish.color.g = 0.1;
+        for  my_point in my_points:
+            to_publish.points.append(geometry_msgs.msg.Point(my_point['pose']['position']['x'], my_point['pose']['position']['y'], my_point['pose']['position']['z']));
+
+        self.marker_pub.publish(to_publish);
+        self.rate.sleep();
     
     def distance(self, point1, point2):
         x1 = point1['pose']['position']['x'];
@@ -165,7 +191,7 @@ if __name__ == '__main__':
     #test_Writer_classes();
     mapDraw = MapDraw(filename);
     try:
-        mapDraw.draw_file_line('/home/ciocirlan/11_path.json');
+        #mapDraw.draw_file_points('/home/ciocirlan/1_path.json');
         rospy.spin();
     except KeyboardInterrupt:
         pass;
