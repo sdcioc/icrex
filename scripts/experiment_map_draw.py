@@ -1,11 +1,12 @@
 #! /usr/bin/python
 import json
+import math
 
 import rospy
 import std_msgs.msg
 import visualization_msgs.msg
 import geometry_msgs.msg
-import sensor_msgs.msg
+
 class MapDraw:
     #constructor
     def __init__(self, filename):
@@ -90,7 +91,7 @@ class MapDraw:
         my_points = [json.loads(line.rstrip('\n')) for line in open(filename, 'r')]
         my_points.sort(key=lambda point: float(point['time']));
         # de modificat gresit
-        for i in range((len(self.my_points)/2)):
+        for i in range((len(my_points)/2)):
             to_publish = visualization_msgs.msg.Marker();
             to_publish.header.frame_id = "/map";
             to_publish.header.stamp = rospy.get_time();
@@ -98,8 +99,8 @@ class MapDraw:
             to_publish.action = visualization_msgs.msg.Marker.ADD;
             to_publish.type = visualization_msgs.msg.Marker.ARROW;
             to_publish.id = i;
-            to_publish.points.append(geometry_msgs.msg.Point(self.my_points[2*i]['pose']['position']['x'], self.my_points[2*i]['pose']['position']['y'], self.my_points[2*i]['pose']['position']['z']));
-            to_publish.points.append(geometry_msgs.msg.Point(self.my_points[2*i+1]['pose']['position']['x'], self.my_points[2*i+1]['pose']['position']['y'], self.my_points[2*i+1]['pose']['position']['z']));
+            to_publish.points.append(geometry_msgs.msg.Point(my_points[2*i]['pose']['position']['x'], my_points[2*i]['pose']['position']['y'], my_points[2*i]['pose']['position']['z']));
+            to_publish.points.append(geometry_msgs.msg.Point(my_points[2*i+1]['pose']['position']['x'], my_points[2*i+1]['pose']['position']['y'], my_points[2*i+1]['pose']['position']['z']));
 
             to_publish.scale.x = 0.1;
             to_publish.scale.y = 0.2;
@@ -120,7 +121,7 @@ class MapDraw:
         # de modificat gresit
         to_publish = visualization_msgs.msg.Marker();
         to_publish.header.frame_id = "/map";
-        to_publish.header.stamp = rospy.get_time();
+        #to_publish.header.stamp = rospy.get_time();
         to_publish.ns = "experiment" + "_" + filename;
         to_publish.action = visualization_msgs.msg.Marker.ADD;
         to_publish.type = visualization_msgs.msg.Marker.LINE_STRIP;
@@ -133,11 +134,29 @@ class MapDraw:
         to_publish.color.a = 1.0;
         to_publish.color.r = 0.1;
         to_publish.color.g = 0.5;
-        to_publish.color.b = 0.1;
+        last_point = None;
         for  my_point in my_points:
-            to_publish.points.append(geometry_msgs.msg.Point(my_point['pose']['position']['x'], my_point['pose']['position']['y'], my_point['pose']['position']['z']));
+            if (last_point != None):
+                my_dist = self.distance(last_point, my_point);
+                if( (my_dist > 0.6) and (my_dist < 10)):
+                    to_publish.points.append(geometry_msgs.msg.Point(my_point['pose']['position']['x'], my_point['pose']['position']['y'], my_point['pose']['position']['z']));
+                    last_point = my_point;
+                else:
+                    continue;
+            else:
+                to_publish.points.append(geometry_msgs.msg.Point(my_point['pose']['position']['x'], my_point['pose']['position']['y'], my_point['pose']['position']['z']));
+                last_point = my_point;
+
         self.marker_pub.publish(to_publish);
         self.rate.sleep();
+    
+    def distance(self, point1, point2):
+        x1 = point1['pose']['position']['x'];
+        y1 = point1['pose']['position']['y'];
+        x2 = point2['pose']['position']['x'];
+        y2 = point2['pose']['position']['y'];
+        return math.sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1));
+
 
 if __name__ == '__main__':
     rospy.init_node('experiment_map_draw', anonymous=True);  
@@ -146,7 +165,7 @@ if __name__ == '__main__':
     #test_Writer_classes();
     mapDraw = MapDraw(filename);
     try:
-        mapDraw.draw_file_line('/home/ciocirlan/1_path.json');
+        mapDraw.draw_file_line('/home/ciocirlan/11_path.json');
         rospy.spin();
     except KeyboardInterrupt:
         pass;
