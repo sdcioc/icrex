@@ -163,6 +163,7 @@ install(PROGRAMS
   scripts/experiment_manual_interface.py
   scripts/experiment_key_teleop.py
   scripts/experiment_map_draw.py
+  scripts/experiment_distance.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
  )
 
